@@ -1,0 +1,795 @@
+[
+  {
+    "id": "halong",
+    "name": "Vịnh Hạ Long",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.951,
+    "lng": 107.059,
+    "address": "Vịnh Hạ Long, TP. Hạ Long, Quảng Ninh",
+    "hours": "Mở cả ngày",
+    "desc": "Di sản thiên nhiên thế giới nổi tiếng.",
+    "thumb": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1564314968303-86c5df2b08e8?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "image", "url": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "youtube", "url": "https://www.youtube.com/watch?v=hvKXo2Z2a1w" }
+    ],
+    "detailUrl": "detail.html?id=halong"
+  },
+  {
+    "id": "museum",
+    "name": "Bảo tàng Quảng Ninh",
+    "category": "service",
+    "type": "play",
+    "lat": 20.9561,
+    "lng": 107.0826,
+    "address": "Trần Quốc Nghiễn, Hồng Hải, TP. Hạ Long",
+    "hours": "8:00–17:00 (đóng thứ Hai)",
+    "desc": "Bảo tàng hiện đại, kiến trúc độc đáo, trưng bày lịch sử – văn hóa Quảng Ninh.",
+    "thumb": "https://images.unsplash.com/photo-1500530855897-3ab8b3a7f3e3?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1544989164-31dc3c645987?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "youtube", "url": "https://www.youtube.com/watch?v=E4H7GqKkRJs" }
+    ],
+    "detailUrl": "detail.html?id=museum"
+  },
+  {
+    "id": "yentu",
+    "name": "Yên Tử",
+    "category": "tour",
+    "type": "play",
+    "lat": 21.1329,
+    "lng": 106.7307,
+    "address": "Khu di tích Yên Tử, TP. Uông Bí",
+    "hours": "7:00–18:00",
+    "desc": "Trung tâm Phật giáo Trúc Lâm, cáp treo, trekking nhẹ.",
+    "thumb": "https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "youtube", "url": "https://www.youtube.com/watch?v=c3E7yK0yYGg" }
+    ],
+    "detailUrl": "detail.html?id=yentu"
+  },
+  {
+    "id": "sunworld",
+    "name": "Sun World Hạ Long",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.9555,
+    "lng": 107.0468,
+    "address": "Bãi Cháy, TP. Hạ Long",
+    "hours": "9:00–21:00 (tùy mùa)",
+    "desc": "Tổ hợp giải trí: cáp treo Nữ hoàng, công viên Rồng, vòng quay Mặt Trời.",
+    "thumb": "https://images.unsplash.com/photo-1520975612331-2073f9c2f3c4?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1520975612331-2073f9c2f3c4?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "youtube", "url": "https://www.youtube.com/watch?v=8xg3vE8Ie_E" }
+    ],
+    "detailUrl": "detail.html?id=sunworld"
+  },
+  {
+    "id": "baitulong",
+    "name": "Vịnh Bái Tử Long",
+    "category": "tour",
+    "type": "play",
+    "lat": 21.098,
+    "lng": 107.482,
+    "address": "Huyện Vân Đồn, Quảng Ninh",
+    "hours": "Mở cả ngày",
+    "desc": "Vùng vịnh hoang sơ, yên tĩnh, trải nghiệm du thuyền – kayak.",
+    "thumb": "https://images.unsplash.com/photo-1500534319513-04e0b1c87ce1?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1526481280698-8fcc13fd5f1c?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "youtube", "url": "https://www.youtube.com/watch?v=Z9AYPxH5NTM" }
+    ],
+    "detailUrl": "detail.html?id=baitulong"
+  },
+  {
+    "id": "coto",
+    "name": "Đảo Cô Tô",
+    "category": "tour",
+    "type": "play",
+    "lat": 21.118,
+    "lng": 107.795,
+    "address": "Huyện Cô Tô, Quảng Ninh",
+    "hours": "Mở cả ngày",
+    "desc": "Biển xanh, bãi cát trắng, check-in hải đăng Cô Tô.",
+    "thumb": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "youtube", "url": "https://www.youtube.com/watch?v=aqz-KE-bpKQ" }
+    ],
+    "detailUrl": "detail.html?id=coto"
+  },
+  {
+    "id": "quanlan",
+    "name": "Đảo Quan Lạn",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.942,
+    "lng": 107.489,
+    "address": "H. Vân Đồn, Quảng Ninh",
+    "hours": "Mở cả ngày",
+    "desc": "Biển trong xanh, ít đông, bãi Minh Châu – Sơn Hào.",
+    "thumb": "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=quanlan"
+  },
+  {
+    "id": "mongcai",
+    "name": "TP. Móng Cái",
+    "category": "tour",
+    "type": "play",
+    "lat": 21.526,
+    "lng": 107.970,
+    "address": "TP. Móng Cái, Quảng Ninh",
+    "hours": "Mở cả ngày",
+    "desc": "Thành phố biên giới sôi động, chợ đêm, cầu Bắc Luân.",
+    "thumb": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=mongcai"
+  },
+  {
+    "id": "vandondai",
+    "name": "Bãi Dài Vân Đồn",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.962,
+    "lng": 107.433,
+    "address": "Vân Đồn, Quảng Ninh",
+    "hours": "Mở cả ngày",
+    "desc": "Bãi biển dài mịn, nước cạn – phù hợp gia đình.",
+    "thumb": "https://images.unsplash.com/photo-1519046904884-53103b34b206?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1519046904884-53103b34b206?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=vandondai"
+  },
+  {
+    "id": "tuanchaumarina",
+    "name": "Bến du thuyền Tuần Châu",
+    "category": "service",
+    "type": "play",
+    "lat": 20.909,
+    "lng": 107.019,
+    "address": "KĐT Tuần Châu, Hạ Long",
+    "hours": "7:00–22:00",
+    "desc": "Điểm xuất phát cho nhiều tour du thuyền vịnh.",
+    "thumb": "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=tuanchaumarina"
+  },
+  {
+    "id": "caphacafe",
+    "name": "Cà phê View Cầu Bãi Cháy",
+    "category": "service",
+    "type": "eat",
+    "lat": 20.954,
+    "lng": 107.05,
+    "address": "Bãi Cháy, Hạ Long",
+    "hours": "8:00–23:00",
+    "desc": "Quán cà phê ngắm hoàng hôn cầu Bãi Cháy.",
+    "thumb": "https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "youtube", "url": "https://www.youtube.com/watch?v=Zi_XLOBDo_Y" }
+    ],
+    "detailUrl": "detail.html?id=caphacafe"
+  },
+  {
+    "id": "haisanbacha",
+    "name": "Nhà hàng Hải sản Bãi Cháy",
+    "category": "service",
+    "type": "eat",
+    "lat": 20.958,
+    "lng": 107.047,
+    "address": "Bãi Cháy, Hạ Long",
+    "hours": "10:00–22:00",
+    "desc": "Hải sản tươi sống, chế biến tại chỗ.",
+    "thumb": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1553621042-f6e147245754?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=haisanbacha"
+  },
+  {
+    "id": "chodenhalong",
+    "name": "Chợ đêm Hạ Long",
+    "category": "event",
+    "type": "play",
+    "lat": 20.953,
+    "lng": 107.048,
+    "address": "Bãi Cháy, Hạ Long",
+    "hours": "18:00–23:30",
+    "desc": "Mua sắm, ẩm thực đường phố, quà lưu niệm.",
+    "thumb": "https://images.unsplash.com/photo-1519744792095-2f2205e87b6f?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1498654896293-37aacf113fd9?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=chodenhalong"
+  },
+  {
+    "id": "vinpearlresort",
+    "name": "Vinpearl Resort & Spa Hạ Long",
+    "category": "service",
+    "type": "stay",
+    "lat": 20.938,
+    "lng": 107.090,
+    "address": "Đảo Rêu, Hạ Long",
+    "hours": "24/7",
+    "desc": "Resort 5*, bể bơi, bãi biển riêng, view vịnh.",
+    "thumb": "https://images.unsplash.com/photo-1551776235-dde6d4829808?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1551776235-dde6d4829808?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=vinpearlresort"
+  },
+  {
+    "id": "legacyyentu",
+    "name": "Legacy Yên Tử",
+    "category": "service",
+    "type": "stay",
+    "lat": 21.132,
+    "lng": 106.723,
+    "address": "Yên Tử, Uông Bí",
+    "hours": "24/7",
+    "desc": "Khu nghỉ dưỡng phong cách thiền tịnh.",
+    "thumb": "https://images.unsplash.com/photo-1560448075-bb4caa6cfcf3?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1560448075-bb4caa6cfcf3?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=legacyyentu"
+  },
+  {
+    "id": "bachaibeach",
+    "name": "Bãi biển Bãi Cháy",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.953,
+    "lng": 107.028,
+    "address": "Bãi Cháy, Hạ Long",
+    "hours": "Mở cả ngày",
+    "desc": "Bãi tắm nhân tạo rộng, nhiều dịch vụ ven biển.",
+    "thumb": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1519821172141-b5d8f1f1e26f?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=bachaibeach"
+  },
+  {
+    "id": "cauchaibachay",
+    "name": "Cầu Bãi Cháy",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.961,
+    "lng": 107.058,
+    "address": "Nút giao Bãi Cháy – Hòn Gai",
+    "hours": "Mở cả ngày",
+    "desc": "Cầu dây văng đẹp nhất Hạ Long, ngắm đêm rất chill.",
+    "thumb": "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=cauchaibachay"
+  },
+  {
+    "id": "chualongtien",
+    "name": "Chùa Long Tiên",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.955,
+    "lng": 107.086,
+    "address": "Trần Quốc Nghiễn, Hòn Gai",
+    "hours": "7:00–18:00",
+    "desc": "Ngôi chùa lớn nhất Hạ Long, kiến trúc cổ kính.",
+    "thumb": "https://images.unsplash.com/photo-1549890762-0a3f8933bcf2?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1549890762-0a3f8933bcf2?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=chualongtien"
+  },
+  {
+    "id": "hontrongmai",
+    "name": "Hòn Trống Mái",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.912,
+    "lng": 107.037,
+    "address": "Vịnh Hạ Long",
+    "hours": "Theo tour thuyền",
+    "desc": "Biểu tượng du lịch vịnh Hạ Long.",
+    "thumb": "https://images.unsplash.com/photo-1451984263263-5872b34b7add?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1451984263263-5872b34b7add?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=hontrongmai"
+  },
+  {
+    "id": "haiduongquan",
+    "name": "Hải sản Hải Dương Quán",
+    "category": "service",
+    "type": "eat",
+    "lat": 20.951,
+    "lng": 107.051,
+    "address": "Bãi Cháy, Hạ Long",
+    "hours": "10:00–22:00",
+    "desc": "Hải sản tươi, menu phong phú.",
+    "thumb": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1514513878747-45f48f0e3a38?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "youtube", "url": "https://www.youtube.com/watch?v=3JZ_D3ELwOQ" }
+    ],
+    "detailUrl": "detail.html?id=haiduongquan"
+  },
+  {
+    "id": "minhchau",
+    "name": "Bãi Minh Châu",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.953,
+    "lng": 107.538,
+    "address": "Quan Lạn, Vân Đồn",
+    "hours": "Mở cả ngày",
+    "desc": "Cát trắng, mịn như bột, nước xanh ngọc.",
+    "thumb": "https://images.unsplash.com/photo-1468413253725-0d5181091126?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1468413253725-0d5181091126?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=minhchau"
+  },
+  {
+    "id": "halongcarnaval",
+    "name": "Carnaval Hạ Long",
+    "category": "event",
+    "type": "play",
+    "lat": 20.973,
+    "lng": 107.046,
+    "address": "Đường Hạ Long, Bãi Cháy",
+    "hours": "Theo lịch sự kiện",
+    "desc": "Lễ hội đường phố, pháo hoa, âm nhạc sôi động.",
+    "thumb": "https://images.unsplash.com/photo-1455734729978-db1ae4f687dd?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "youtube", "url": "https://www.youtube.com/watch?v=L_jWHffIx5E" }
+    ],
+    "detailUrl": "detail.html?id=halongcarnaval"
+  },
+  {
+    "id": "nuibaitho",
+    "name": "Núi Bài Thơ",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.9515,
+    "lng": 107.0833,
+    "address": "P. Bạch Đằng, TP. Hạ Long",
+    "hours": "6:00–18:00",
+    "desc": "Điểm leo núi ngắm toàn cảnh vịnh Hạ Long.",
+    "thumb": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=nuibaitho"
+  },
+  {
+    "id": "traco",
+    "name": "Bãi biển Trà Cổ",
+    "category": "tour",
+    "type": "play",
+    "lat": 21.528,
+    "lng": 108.056,
+    "address": "TP. Móng Cái, Quảng Ninh",
+    "hours": "Mở cả ngày",
+    "desc": "Bãi biển dài, thoải, nổi tiếng hoang sơ ở Móng Cái.",
+    "thumb": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=traco"
+  },
+  {
+    "id": "suoiquanghanh",
+    "name": "Suối khoáng nóng Quang Hanh",
+    "category": "tour",
+    "type": "play",
+    "lat": 21.083,
+    "lng": 107.083,
+    "address": "Cẩm Phả, Quảng Ninh",
+    "hours": "7:00–22:00",
+    "desc": "Khu nghỉ dưỡng suối khoáng nóng onsen phong cách Nhật Bản.",
+    "thumb": "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1549887534-4a23d0c37e2c?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=suoiquanghanh"
+  },
+  {
+    "id": "hoYentrung",
+    "name": "Hồ Yên Trung",
+    "category": "tour",
+    "type": "play",
+    "lat": 21.082,
+    "lng": 106.73,
+    "address": "TP. Uông Bí, Quảng Ninh",
+    "hours": "Mở cả ngày",
+    "desc": "Hồ nước ngọt lớn giữa rừng thông, thích hợp picnic.",
+    "thumb": "https://images.unsplash.com/photo-1526481280698-8fcc13fd5f1c?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=hoYentrung"
+  },
+  {
+    "id": "denCuaOng",
+    "name": "Đền Cửa Ông",
+    "category": "tour",
+    "type": "play",
+    "lat": 21.033,
+    "lng": 107.353,
+    "address": "Cẩm Phả, Quảng Ninh",
+    "hours": "7:00–18:00",
+    "desc": "Di tích lịch sử thờ Hưng Nhượng Đại Vương Trần Quốc Tảng.",
+    "thumb": "https://images.unsplash.com/photo-1549890762-0a3f8933bcf2?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1549890762-0a3f8933bcf2?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=denCuaOng"
+  },
+  {
+    "id": "denTraco",
+    "name": "Đền Trà Cổ",
+    "category": "tour",
+    "type": "play",
+    "lat": 21.529,
+    "lng": 108.055,
+    "address": "Trà Cổ, Móng Cái",
+    "hours": "7:00–18:00",
+    "desc": "Ngôi đền cổ kính, gắn liền với lễ hội Trà Cổ nổi tiếng.",
+    "thumb": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1451984263263-5872b34b7add?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=denTraco"
+  },
+  {
+    "id": "dinhlucnam",
+    "name": "Đình Lục Nà",
+    "category": "tour",
+    "type": "play",
+    "lat": 21.312,
+    "lng": 107.547,
+    "address": "Bình Liêu, Quảng Ninh",
+    "hours": "7:00–17:00",
+    "desc": "Đình làng tiêu biểu miền núi phía Bắc Quảng Ninh.",
+    "thumb": "https://images.unsplash.com/photo-1544989164-31dc3c645987?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=dinhlucnam"
+  },
+  {
+    "id": "chuaCaibau",
+    "name": "Chùa Cái Bầu",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.976,
+    "lng": 107.485,
+    "address": "H. Vân Đồn, Quảng Ninh",
+    "hours": "7:00–18:00",
+    "desc": "Ngôi chùa mới, tọa lạc trên núi nhìn ra vịnh Bái Tử Long.",
+    "thumb": "https://images.unsplash.com/photo-1560448075-bb4caa6cfcf3?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1549890762-0a3f8933bcf2?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=chuaCaibau"
+  },
+  {
+    "id": "nhahathalong",
+    "name": "Nhà hát Hạ Long",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.956,
+    "lng": 107.082,
+    "address": "Trần Quốc Nghiễn, TP. Hạ Long",
+    "hours": "8:00–22:00",
+    "desc": "Nhà hát lớn phục vụ nghệ thuật, sự kiện văn hóa.",
+    "thumb": "https://images.unsplash.com/photo-1455734729978-db1ae4f687dd?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1451984263263-5872b34b7add?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=nhahathalong"
+  },
+  {
+    "id": "thuvienqn",
+    "name": "Thư viện tỉnh Quảng Ninh",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.957,
+    "lng": 107.082,
+    "address": "Trần Quốc Nghiễn, TP. Hạ Long",
+    "hours": "8:00–17:00",
+    "desc": "Không gian đọc sách, nghiên cứu hiện đại bên bờ vịnh.",
+    "thumb": "https://images.unsplash.com/photo-1544989164-31dc3c645987?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=thuvienqn"
+  },
+  {
+    "id": "choamthuchalong",
+    "name": "Chợ ẩm thực Hạ Long",
+    "category": "service",
+    "type": "eat",
+    "lat": 20.956,
+    "lng": 107.048,
+    "address": "Bãi Cháy, TP. Hạ Long",
+    "hours": "10:00–23:00",
+    "desc": "Thiên đường hải sản và đặc sản địa phương.",
+    "thumb": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1514513878747-45f48f0e3a38?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=choamthuchalong"
+  },
+  {
+    "id": "quanchamuc",
+    "name": "Quán chả mực Hoài Phương",
+    "category": "service",
+    "type": "eat",
+    "lat": 20.951,
+    "lng": 107.05,
+    "address": "P. Bạch Đằng, TP. Hạ Long",
+    "hours": "9:00–22:00",
+    "desc": "Nổi tiếng với món chả mực giã tay.",
+    "thumb": "https://images.unsplash.com/photo-1553621042-f6e147245754?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=quanchamuc"
+  },
+   {
+    "id": "nhahanghonghanh",
+    "name": "Nhà hàng Hồng Hạnh",
+    "category": "service",
+    "type": "eat",
+    "lat": 20.957,
+    "lng": 107.048,
+    "address": "Bãi Cháy, TP. Hạ Long",
+    "hours": "10:00–22:00",
+    "desc": "Chuỗi nhà hàng hải sản nổi tiếng tại Hạ Long.",
+    "thumb": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1553621042-f6e147245754?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=nhahanghonghanh"
+  },
+  {
+    "id": "caferooftop",
+    "name": "Cafe Rooftop Hòn Gai",
+    "category": "service",
+    "type": "eat",
+    "lat": 20.951,
+    "lng": 107.086,
+    "address": "P. Hồng Gai, TP. Hạ Long",
+    "hours": "8:00–23:00",
+    "desc": "Quán cà phê sân thượng, ngắm vịnh từ trên cao.",
+    "thumb": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=caferooftop"
+  },
+  {
+    "id": "beerclub",
+    "name": "Beer Club Bãi Cháy",
+    "category": "service",
+    "type": "eat",
+    "lat": 20.954,
+    "lng": 107.052,
+    "address": "Bãi Cháy, Hạ Long",
+    "hours": "18:00–2:00",
+    "desc": "Không gian giải trí sôi động, bia tươi và nhạc DJ.",
+    "thumb": "https://images.unsplash.com/photo-1514513878747-45f48f0e3a38?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1544989164-31dc3c645987?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=beerclub"
+  },
+  {
+    "id": "langchaivungvieng",
+    "name": "Làng chài Vung Viêng",
+    "category": "tour",
+    "type": "play",
+    "lat": 20.961,
+    "lng": 107.46,
+    "address": "Vịnh Bái Tử Long, Vân Đồn",
+    "hours": "Theo tour thuyền",
+    "desc": "Trải nghiệm làng chài nổi, chèo kayak, ăn hải sản trên bè.",
+    "thumb": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=langchaivungvieng"
+  },
+  {
+    "id": "flchalong",
+    "name": "FLC Hạ Long Bay Golf & Resort",
+    "category": "service",
+    "type": "stay",
+    "lat": 20.956,
+    "lng": 107.058,
+    "address": "Hạ Long, Quảng Ninh",
+    "hours": "24/7",
+    "desc": "Resort sang trọng, sân golf 18 hố view toàn vịnh.",
+    "thumb": "https://images.unsplash.com/photo-1551776235-dde6d4829808?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1551776235-dde6d4829808?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=flchalong"
+  },
+  {
+    "id": "wyndhamhalong",
+    "name": "Wyndham Legend Hạ Long",
+    "category": "service",
+    "type": "stay",
+    "lat": 20.952,
+    "lng": 107.082,
+    "address": "Trần Quốc Nghiễn, TP. Hạ Long",
+    "hours": "24/7",
+    "desc": "Khách sạn 5 sao, view cầu Bãi Cháy và vịnh.",
+    "thumb": "https://images.unsplash.com/photo-1560448075-bb4caa6cfcf3?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1560448075-bb4caa6cfcf3?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=wyndhamhalong"
+  },
+  {
+    "id": "premiervillage",
+    "name": "Premier Village Hạ Long",
+    "category": "service",
+    "type": "stay",
+    "lat": 20.948,
+    "lng": 107.044,
+    "address": "Bãi Cháy, Hạ Long",
+    "hours": "24/7",
+    "desc": "Khu biệt thự nghỉ dưỡng cao cấp ven biển.",
+    "thumb": "https://images.unsplash.com/photo-1551776235-dde6d4829808?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1551776235-dde6d4829808?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=premiervillage"
+  },
+  {
+    "id": "muongthanhhalong",
+    "name": "Khách sạn Mường Thanh Hạ Long",
+    "category": "service",
+    "type": "stay",
+    "lat": 20.956,
+    "lng": 107.048,
+    "address": "P. Bãi Cháy, Hạ Long",
+    "hours": "24/7",
+    "desc": "Khách sạn 4 sao, nhiều tiện ích, phòng hướng biển.",
+    "thumb": "https://images.unsplash.com/photo-1551776235-dde6d4829808?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1560448075-bb4caa6cfcf3?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=muongthanhhalong"
+  },
+  {
+    "id": "homestayyentu",
+    "name": "Homestay Yên Tử",
+    "category": "service",
+    "type": "stay",
+    "lat": 21.135,
+    "lng": 106.73,
+    "address": "Khu di tích Yên Tử, Uông Bí",
+    "hours": "24/7",
+    "desc": "Lưu trú bình dân cho du khách hành hương Yên Tử.",
+    "thumb": "https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1549890762-0a3f8933bcf2?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=homestayyentu"
+  },
+  {
+    "id": "nghiduongngocvung",
+    "name": "Ecolodge Ngọc Vừng",
+    "category": "service",
+    "type": "stay",
+    "lat": 20.918,
+    "lng": 107.556,
+    "address": "Đảo Ngọc Vừng, Vân Đồn",
+    "hours": "24/7",
+    "desc": "Khu nghỉ dưỡng sinh thái, gần bãi biển hoang sơ.",
+    "thumb": "https://images.unsplash.com/photo-1551776235-dde6d4829808?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1560448075-bb4caa6cfcf3?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=nghiduongngocvung"
+  },
+  {
+    "id": "lehoicuongong",
+    "name": "Lễ hội Đền Cửa Ông",
+    "category": "event",
+    "type": "play",
+    "lat": 21.033,
+    "lng": 107.353,
+    "address": "Đền Cửa Ông, Cẩm Phả",
+    "hours": "Theo lịch tháng Giêng",
+    "desc": "Lễ hội truyền thống tưởng nhớ Trần Quốc Tảng.",
+    "thumb": "https://images.unsplash.com/photo-1455734729978-db1ae4f687dd?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1451984263263-5872b34b7add?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=lehoicuongong"
+  },
+  {
+    "id": "lehoitraco",
+    "name": "Lễ hội Trà Cổ",
+    "category": "event",
+    "type": "play",
+    "lat": 21.529,
+    "lng": 108.055,
+    "address": "Trà Cổ, Móng Cái",
+    "hours": "Theo lịch tháng Sáu",
+    "desc": "Lễ hội cầu ngư, rước ông Voi, đặc sắc miền biển.",
+    "thumb": "https://images.unsplash.com/photo-1455734729978-db1ae4f687dd?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=lehoitraco"
+  },
+  {
+    "id": "festivalcoto",
+    "name": "Festival Biển Cô Tô",
+    "category": "event",
+    "type": "play",
+    "lat": 21.118,
+    "lng": 107.795,
+    "address": "Huyện Cô Tô, Quảng Ninh",
+    "hours": "Theo lịch mùa hè",
+    "desc": "Lễ hội biển, âm nhạc, trò chơi thể thao nước.",
+    "thumb": "https://images.unsplash.com/photo-1455734729978-db1ae4f687dd?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1519744792095-2f2205e87b6f?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=festivalcoto"
+  },
+  {
+    "id": "hoiduaBachdang",
+    "name": "Hội đua thuyền Bạch Đằng",
+    "category": "event",
+    "type": "play",
+    "lat": 21.05,
+    "lng": 106.85,
+    "address": "Quảng Yên, Quảng Ninh",
+    "hours": "Theo lịch tháng Ba",
+    "desc": "Đua thuyền truyền thống tưởng nhớ chiến thắng Bạch Đằng.",
+    "thumb": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=hoiduaBachdang"
+  },
+  {
+    "id": "lehoiyentu",
+    "name": "Lễ hội Yên Tử",
+    "category": "event",
+    "type": "play",
+    "lat": 21.133,
+    "lng": 106.73,
+    "address": "Khu di tích Yên Tử, Uông Bí",
+    "hours": "Mùa xuân",
+    "desc": "Lễ hội hành hương lớn nhất miền Bắc đầu năm.",
+    "thumb": "https://images.unsplash.com/photo-1455734729978-db1ae4f687dd?q=80&w=1200&auto=format&fit=crop",
+    "media": [
+      { "type": "image", "url": "https://images.unsplash.com/photo-1549890762-0a3f8933bcf2?q=80&w=1200&auto=format&fit=crop" }
+    ],
+    "detailUrl": "detail.html?id=lehoiyentu"
+  }
+]

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>Khám phá | Quảng Ninh Explorer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link href="styles.css" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --brand:#0ea5a3;
+      --brand-ink:#0b6b64;
+      --chip-bg:#e6fbf8;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;background:var(--bg);color:var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    /* Layout */
+    .wrap{max-width:1080px;margin:0 auto;padding:20px 16px 40px}
+    .topbar{
+      position:sticky;top:0;z-index:10;background:linear-gradient(180deg,#f6f8fbe6,#f6f8fb00);
+      backdrop-filter:saturate(1.2) blur(4px);padding-top:8px;
+    }
+    .toprow{
+      display:flex;gap:10px;align-items:center;justify-content:space-between;
+      padding:8px 0;
+    }
+    .back{display:inline-flex;gap:6px;align-items:center;color:var(--brand-ink);text-decoration:none;font-weight:600}
+    .back .material-icons{font-size:20px}
+
+    /* Search + filters */
+    .search{
+      flex:1;display:flex;gap:8px;align-items:center;
+      border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:#fff;
+      box-shadow:0 1px 0 rgba(15,23,42,.03);
+    }
+    .search input{flex:1;border:0;outline:0;font-size:15px;background:transparent}
+    .filters{display:flex;gap:8px;flex-wrap:wrap}
+    .pill{
+      display:inline-flex;gap:6px;align-items:center;
+      border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:14px;
+      cursor:pointer;user-select:none;transition:.15s transform ease,.15s box-shadow ease;
+    }
+    .pill:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(2,8,23,.08)}
+    .pill.active{background:var(--chip-bg);border-color:#bce7e1}
+    .pill .dot{width:8px;height:8px;border-radius:99px}
+    .dot-tour{background:#0ea5a3}
+    .dot-svc{background:#8b5cf6}
+    .dot-evt{background:#ef4444}
+
+    /* Meta bar */
+    .metabar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:10px}
+    .count{color:#475569;font-size:14px}
+    .pagesize{display:flex;align-items:center;gap:6px;color:#475569;font-size:14px}
+    select{border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:#fff}
+
+    /* List */
+    .list{margin-top:14px;display:grid;gap:14px}
+    .item{
+      display:grid;grid-template-columns:160px 1fr;gap:14px;
+      border:1px solid var(--line);border-radius:var(--radius);background:var(--card);
+      padding:12px;box-shadow:0 2px 10px rgba(2,8,23,.04);
+      transition:.2s transform ease,.2s box-shadow ease;
+    }
+    .item:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(2,8,23,.08)}
+    .item img{width:100%;height:110px;object-fit:cover;border-radius:12px;background:#f1f5f9}
+    .item h3{margin:0;font-size:18px;line-height:1.25}
+    .meta{font-size:13px;color:var(--muted)}
+    .tag{font-size:12px;background:#d7efec;color:#125e55;border-radius:999px;padding:2px 8px;font-weight:700}
+    .desc{margin:6px 0 10px;color:#334155;font-size:14px}
+    .btn{
+      border:1px solid var(--line);border-radius:10px;background:#fff;padding:8px 12px;cursor:pointer;
+      display:inline-flex;gap:6px;align-items:center;text-decoration:none;color:#0b1220;font-weight:500;
+      transition:.15s transform ease,.15s box-shadow ease;
+    }
+    .btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(2,8,23,.08)}
+    .btn.primary{background:var(--brand);border-color:#11c0be;color:#fff}
+    .btn .material-icons{font-size:18px}
+
+    /* Pagination */
+    .pager{
+      display:flex;gap:8px;align-items:center;justify-content:center;margin-top:18px;flex-wrap:wrap;
+    }
+    .pagebtn{
+      min-width:40px;min-height:36px;padding:6px 10px;border:1px solid var(--line);background:#fff;border-radius:10px;
+      cursor:pointer;font-weight:600;
+    }
+    .pagebtn[disabled]{opacity:.45;cursor:not-allowed}
+    .pagebtn.active{background:var(--brand);border-color:#11c0be;color:#fff}
+
+    /* Empty & skeleton */
+    .empty{
+      margin:30px auto;padding:30px;border:1px dashed var(--line);border-radius:14px;text-align:center;color:#475569;background:#fff;
+    }
+    .skeleton{
+      display:grid;grid-template-columns:160px 1fr;gap:14px;border:1px solid var(--line);
+      border-radius:var(--radius);background:#fff;padding:12px;overflow:hidden;position:relative;
+    }
+    .shimmer{animation:shimmer 1.2s infinite linear;background:linear-gradient(90deg,#f3f4f6 0%,#e5e7eb 50%,#f3f4f6 100%);background-size:200% 100%}
+    .sk-img{height:110px;border-radius:12px}
+    .sk-line{height:12px;border-radius:6px;margin:6px 0}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* Toast */
+    .toast{
+      position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+      background:#0f766e;color:#fff;border-radius:999px;padding:10px 14px;display:flex;gap:8px;align-items:center;
+      box-shadow:0 10px 30px rgba(15,118,110,.35);opacity:0;pointer-events:none;transition:.25s ease;z-index:50;
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .toast .material-icons{font-size:18px}
+
+    /* Responsive */
+    @media (max-width:720px){
+      .item{grid-template-columns:1fr}
+      .item img{height:180px}
+      .toprow{flex-direction:column;align-items:stretch}
+      .filters{justify-content:space-between}
+    }
+    /* Fix không cuộn được ở trang Khám phá */
+html, body {
+  height: auto !important;
+  overflow-y: auto !important;   /* cho phép lướt dọc */
+  overflow-x: hidden;            /* chặn cuộn ngang ngoài ý muốn */
+  -webkit-overflow-scrolling: touch; /* mượt trên iOS */
+  touch-action: pan-y;           /* đảm bảo vuốt dọc hoạt động */
+}
+
+/* Tránh kế thừa từ trang bản đồ có overflow hidden toàn cục */
+*,
+*:before,
+*:after {
+  overscroll-behavior: auto;
+}
+
+/* Đảm bảo layout đủ cao để có nội dung để cuộn */
+.wrap { min-height: 100vh; }
+
+/* Sticky topbar vẫn ok, không che nội dung khi cuộn */
+.topbar { position: sticky; top: 0; }
+
+/* Đừng khóa list trong container cố định chiều cao */
+.list { overflow: visible !important; }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="toprow">
+        <a class="back" href="index.html"><span class="material-icons">arrow_back</span> Quay lại bản đồ</a>
+        <div class="search" role="search">
+          <span class="material-icons" aria-hidden="true">search</span>
+          <input id="q" placeholder="Tìm theo tên, mô tả, danh mục" aria-label="Tìm kiếm địa điểm" />
+        </div>
+      </div>
+      <div class="filters" role="tablist" aria-label="Bộ lọc danh mục">
+        <button id="filterAll"   class="pill active" role="tab" aria-selected="true"><span class="material-icons">all_inclusive</span> Tất cả</button>
+        <button id="filterTour"  class="pill" role="tab" aria-selected="false"><span class="dot dot-tour"></span> Du lịch</button>
+        <button id="filterSvc"   class="pill" role="tab" aria-selected="false"><span class="dot dot-svc"></span> Sản phẩm</button>
+        <button id="filterEvt"   class="pill" role="tab" aria-selected="false"><span class="dot dot-evt"></span> Sự kiện</button>
+      </div>
+      <div class="metabar">
+        <div class="count" id="resultCount">Đang tải…</div>
+        <div class="pagesize">
+          Hiển thị
+          <select id="pageSize">
+            <option value="6">6</option>
+            <option value="9" selected>9</option>
+            <option value="12">12</option>
+            <option value="18">18</option>
+            <option value="24">24</option>
+          </select>
+          mục mỗi trang
+        </div>
+      </div>
+    </div>
+
+    <div id="list" class="list" aria-live="polite"></div>
+    <div id="pager" class="pager" aria-label="Phân trang"></div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span class="material-icons">bookmark_added</span> Đã lưu vào Cá nhân
+  </div>
+
+  <script>
+    /* ---------- Utilities ---------- */
+    const esc = s => (s||'').toString().replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+    const catLabel = t => ({tour:'Du lịch', service:'Sản phẩm', event:'Sự kiện', evt:'Sự kiện', svc:'Sản phẩm'})[t] || 'Khác';
+
+    let all=[], filtered=[], mode='all';
+    let page=1, pageSize=9;
+
+    /* ---------- Init ---------- */
+    init();
+    async function init(){
+      showSkeleton();
+      try{
+        const base = await fetch('data/spots.json?v=3').then(r=>r.json()).catch(()=>[]);
+        const user = JSON.parse(localStorage.getItem('qn_user_points')||'[]');
+        all = normalize(base).concat(normalize(user));
+        filtered = all.slice();
+        apply(); // will render + paginate
+      }catch(e){
+        document.getElementById('list').innerHTML = `<div class="empty">Lỗi tải dữ liệu.</div>`;
+      }
+    }
+
+    function normalize(arr=[]){
+      return arr.map(s=>({
+        id: s.id || Math.random().toString(36).slice(2,10),
+        name: s.name || 'Điểm',
+        category: (s.category || s.typeCategory || s.typeCat || 'tour').toLowerCase(),
+        type: (s.type || 'play').toLowerCase(),
+        lat: s.lat ?? (Array.isArray(s.coords)?s.coords[0]:0),
+        lng: s.lng ?? (Array.isArray(s.coords)?s.coords[1]:0),
+        desc: s.desc || s.description || '',
+        thumb: s.thumb || '',
+        media: Array.isArray(s.media) ? s.media : [],
+      }));
+    }
+
+    /* ---------- Filtering + Search ---------- */
+    function apply(){
+      const kw = document.getElementById('q').value?.trim().toLowerCase() || '';
+      filtered = all.filter(p=>{
+        const okCat = mode==='all' ? true :
+          (mode==='tour' ? p.category==='tour' :
+           mode==='service' ? (p.category==='service'||p.category==='svc') :
+           mode==='event' ? (p.category==='event'||p.category==='evt') : true);
+        const okKw = !kw ||
+          p.name.toLowerCase().includes(kw) ||
+          (p.desc||'').toLowerCase().includes(kw) ||
+          catLabel(p.category).toLowerCase().includes(kw);
+        return okCat && okKw;
+      });
+      page = 1; // reset về trang đầu mỗi lần lọc
+      render();
+    }
+
+    /* ---------- Render list + pagination ---------- */
+    function render(){
+      const total = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+      if(page > totalPages) page = totalPages;
+
+      const start = (page-1)*pageSize;
+      const end = Math.min(start + pageSize, total);
+      const slice = filtered.slice(start, end);
+
+      document.getElementById('resultCount').textContent = total
+        ? `Có ${total} địa điểm • Hiển thị ${start+1} đến ${end}`
+        : `Không tìm thấy địa điểm phù hợp`;
+
+      const box = document.getElementById('list');
+      if(!total){
+        box.innerHTML = `<div class="empty">Không có kết quả. Thử đổi từ khóa hoặc bộ lọc.</div>`;
+        document.getElementById('pager').innerHTML = '';
+        return;
+      }
+
+      box.innerHTML = slice.map(p=>`
+        <article class="item">
+          <img src="${esc(p.thumb||'images/placeholder.jpg')}" alt="" loading="lazy">
+          <div>
+            <div style="display:flex;gap:10px;align-items:flex-start;justify-content:space-between">
+              <h3>${esc(p.name)}</h3>
+              <span class="tag">${catLabel(p.category)}</span>
+            </div>
+            <div class="meta">Tọa độ: ${p.lat}, ${p.lng}</div>
+            <p class="desc">${esc(p.desc||'')}</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <a class="btn primary" href="detail.html?id=${encodeURIComponent(p.id)}" target="_blank" rel="noopener">
+                <span class="material-icons">info</span> Xem chi tiết
+              </a>
+              <a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}" target="_blank" rel="noopener">
+                <span class="material-icons">navigation</span> Chỉ đường
+              </a>
+              <button class="btn" onclick="saveFav('${p.id}')">
+                <span class="material-icons">bookmark_add</span> Lưu
+              </button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages){
+      const el = document.getElementById('pager');
+      const maxShown = 7; // số nút tối đa hiển thị
+      let pages = [];
+      if(totalPages <= maxShown){
+        for(let i=1;i<=totalPages;i++) pages.push(i);
+      }else{
+        const left = Math.max(2, page-2);
+        const right = Math.min(totalPages-1, page+2);
+        pages = [1];
+        if(left > 2) pages.push('…');
+        for(let i=left;i<=right;i++) pages.push(i);
+        if(right < totalPages-1) pages.push('…');
+        pages.push(totalPages);
+      }
+
+      const btn = (label, p, disabled=false, active=false) =>
+        `<button class="pagebtn ${active?'active':''}" ${disabled?'disabled':''} data-page="${p}">${label}</button>`;
+
+      let html = '';
+      html += btn('<span class="material-icons">chevron_left</span>', page-1, page===1, false);
+      pages.forEach(n=>{
+        if(n==='…') html += `<span style="padding:6px 4px;color:#94a3b8">…</span>`;
+        else html += btn(n, n, false, n===page);
+      });
+      html += btn('<span class="material-icons">chevron_right</span>', page+1, page===totalPages, false);
+      el.innerHTML = html;
+
+      // events
+      [...el.querySelectorAll('.pagebtn')].forEach(b=>{
+        b.onclick = () => {
+          const p = +b.getAttribute('data-page');
+          if(!isNaN(p)){ page = p; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+        };
+      });
+    }
+
+    /* ---------- Save favorite with toast ---------- */
+    function saveFav(id){
+      const key='qn_saved';
+      const a = JSON.parse(localStorage.getItem(key)||'[]');
+      if(!a.includes(id)) a.push(id);
+      localStorage.setItem(key, JSON.stringify(a));
+      showToast();
+    }
+    function showToast(){
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'), 1400);
+    }
+
+    /* ---------- Events ---------- */
+    // Debounce search
+    let tSearch;
+    document.getElementById('q').addEventListener('input', ()=>{
+      clearTimeout(tSearch);
+      tSearch = setTimeout(apply, 220);
+    });
+
+    // Filter pills
+    const pills = {
+      all:  document.getElementById('filterAll'),
+      tour: document.getElementById('filterTour'),
+      service: document.getElementById('filterSvc'),
+      event: document.getElementById('filterEvt'),
+    };
+    Object.entries(pills).forEach(([k,btn])=>{
+      btn.onclick = ()=>{
+        mode = k;
+        Object.values(pills).forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected','true');
+        apply();
+      };
+    });
+
+    // Page size
+    const sizeSel = document.getElementById('pageSize');
+    pageSize = +sizeSel.value || 9;
+    sizeSel.onchange = ()=>{
+      pageSize = +sizeSel.value || 9;
+      page = 1;
+      render();
+    };
+
+    // Keyboard: ← →
+    window.addEventListener('keydown', e=>{
+      const totalPages = Math.max(1, Math.ceil((filtered?.length||0) / pageSize));
+      if(e.key==='ArrowLeft' && page>1){ page--; render(); }
+      if(e.key==='ArrowRight' && page<totalPages){ page++; render(); }
+    });
+
+    /* ---------- Skeleton while loading ---------- */
+    function showSkeleton(){
+      const box = document.getElementById('list');
+      const sk = i=>`
+        <div class="skeleton">
+          <div class="shimmer sk-img"></div>
+          <div>
+            <div class="shimmer sk-line" style="width:60%"></div>
+            <div class="shimmer sk-line" style="width:40%"></div>
+            <div class="shimmer sk-line" style="width:90%;height:10px"></div>
+            <div class="shimmer sk-line" style="width:70%;height:10px"></div>
+          </div>
+        </div>`;
+      box.innerHTML = sk()+sk()+sk()+sk()+sk();
+      document.getElementById('pager').innerHTML = '';
+      document.getElementById('resultCount').textContent = 'Đang tải…';
+    }
+  </script>
+</body>
+</html>

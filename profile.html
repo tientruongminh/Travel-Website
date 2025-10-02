@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Trang cá nhân - Quảng Ninh Explorer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { overflow-y: auto; background: #f8fafc; }
+    
+    .profile-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+    
+    .profile-header {
+      background: linear-gradient(135deg, #1f8175 0%, #2dd4bf 100%);
+      border-radius: 16px;
+      padding: 32px 28px;
+      color: #fff;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(31, 129, 117, 0.2);
+    }
+    
+    .profile-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .profile-stats {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .stat-box {
+      background: rgba(255,255,255,.15);
+      backdrop-filter: blur(10px);
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.2);
+    }
+    
+    .stat-box .num {
+      font-size: 24px;
+      font-weight: 700;
+      display: block;
+    }
+    
+    .stat-box .label {
+      font-size: 13px;
+      opacity: .9;
+    }
+    
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #1f8175;
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 20px;
+      transition: all .2s;
+    }
+    
+    .back-btn:hover {
+      gap: 8px;
+    }
+    
+    .section {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .share-btn {
+      padding: 8px 16px;
+      border: 1.5px solid #e2e8f0;
+      background: #fff;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .2s;
+    }
+    
+    .share-btn:hover {
+      border-color: #1f8175;
+      color: #1f8175;
+      background: #f0fdfa;
+    }
+    
+    .collections-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .collection-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all .2s;
+      background: #fff;
+    }
+    
+    .collection-card:hover {
+      border-color: #1f8175;
+      box-shadow: 0 4px 12px rgba(31,129,117,.1);
+      transform: translateY(-2px);
+    }
+    
+    .collection-preview {
+      position: relative;
+      height: 160px;
+      background: #f1f5f9;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 1px;
+    }
+    
+    .collection-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .collection-count {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .collection-info {
+      padding: 14px;
+    }
+    
+    .collection-info h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    
+    .collection-info p {
+      font-size: 12px;
+      color: #64748b;
+    }
+    
+    .favorites-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    
+    .fav-card {
+      border: 1px solid #f1f5f9;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all .2s;
+      background: #fff;
+    }
+    
+    .fav-card:hover {
+      border-color: #1f8175;
+      box-shadow: 0 3px 10px rgba(31,129,117,.12);
+      transform: translateY(-2px);
+    }
+    
+    .fav-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+    }
+    
+    .fav-info {
+      padding: 12px;
+    }
+    
+    .fav-info h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .fav-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      background: #d7efec;
+      color: #125e55;
+    }
+    
+    .fav-info p {
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    
+    .remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s;
+    }
+    
+    .fav-card:hover .remove-btn {
+      display: flex;
+    }
+    
+    .remove-btn:hover {
+      background: #ef4444;
+      transform: scale(1.1);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+    }
+    
+    .empty-state .material-icons {
+      font-size: 64px;
+      margin-bottom: 12px;
+      opacity: .5;
+    }
+    
+    .empty-state h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+    
+    .new-collection-btn {
+      width: 100%;
+      padding: 16px;
+      border: 2px dashed #cbd5e1;
+      background: #f8fafc;
+      border-radius: 12px;
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all .2s;
+    }
+    
+    .new-collection-btn:hover {
+      border-color: #1f8175;
+      background: #f0fdfa;
+      color: #1f8175;
+    }
+    
+    /* Modal styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .modal-overlay.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: #fff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+      animation: modalSlideUp 0.3s ease;
+    }
+    
+    @keyframes modalSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .modal-header h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: #f1f5f9;
+      color: #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s;
+    }
+    
+    .modal-close:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    
+    .modal-body {
+      padding: 24px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #0f172a;
+      transition: all .2s;
+      font-family: inherit;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #1f8175;
+      box-shadow: 0 0 0 3px rgba(31, 129, 117, 0.1);
+    }
+    
+    textarea.form-input {
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    .upload-area {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      background: #f8fafc;
+    }
+    
+    .upload-area:hover {
+      border-color: #1f8175;
+      background: #f0fdfa;
+    }
+    
+    .upload-area.dragover {
+      border-color: #1f8175;
+      background: #f0fdfa;
+      transform: scale(1.02);
+    }
+    
+    .upload-icon {
+      font-size: 48px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+    
+    .upload-text {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+    
+    .upload-hint {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    
+    .preview-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .preview-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s;
+    }
+    
+    .preview-remove:hover {
+      background: #ef4444;
+      transform: scale(1.1);
+    }
+    
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      border: none;
+    }
+    
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #475569;
+    }
+    
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #1f8175 0%, #2dd4bf 100%);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(31, 129, 117, 0.3);
+    }
+    
+    .btn-primary:hover {
+      box-shadow: 0 4px 12px rgba(31, 129, 117, 0.4);
+      transform: translateY(-1px);
+    }
+    
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-wrap">
+    <a href="index.html" class="back-btn">
+      <span class="material-icons">arrow_back</span>
+      Về bản đồ
+    </a>
+    
+    <div class="profile-header">
+      <h1>Bộ sưu tập của tôi</h1>
+      <p>Lưu giữ và chia sẻ những địa điểm yêu thích của bạn</p>
+      <div class="profile-stats">
+        <div class="stat-box">
+          <span class="num" id="total-saved">0</span>
+          <span class="label">Địa điểm đã lưu</span>
+        </div>
+        <div class="stat-box">
+          <span class="num" id="total-collections">0</span>
+          <span class="label">Bộ sưu tập</span>
+        </div>
+        <div class="stat-box">
+          <span class="num" id="total-photos">0</span>
+          <span class="label">Ảnh đã chụp</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Collections Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span class="material-icons">collections</span>
+          Bộ sưu tập
+        </h2>
+        <button class="share-btn" id="share-collections">
+          <span class="material-icons" style="font-size:16px">share</span>
+          Chia sẻ
+        </button>
+      </div>
+      
+      <div class="collections-grid" id="collections-grid">
+        <button class="new-collection-btn" id="new-collection">
+          <span class="material-icons">add</span>
+          Tạo bộ sưu tập mới
+        </button>
+      </div>
+    </div>
+    
+    <!-- Favorites Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span class="material-icons">favorite</span>
+          Địa điểm yêu thích
+        </h2>
+        <button class="share-btn" id="share-favorites">
+          <span class="material-icons" style="font-size:16px">share</span>
+          Chia sẻ danh sách
+        </button>
+      </div>
+      
+      <div class="favorites-grid" id="favorites-grid"></div>
+    </div>
+  </div>
+
+  <!-- Modal for creating collection -->
+  <div class="modal-overlay" id="collection-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>
+          <span class="material-icons">add_photo_alternate</span>
+          Tạo bộ sưu tập mới
+        </h3>
+        <button class="modal-close" onclick="closeModal()">
+          <span class="material-icons" style="font-size:20px">close</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Tên bộ sưu tập *</label>
+          <input type="text" class="form-input" id="collection-name" placeholder="VD: Hạ Long tháng 10/2025">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Mô tả</label>
+          <textarea class="form-input" id="collection-desc" placeholder="Thêm mô tả cho bộ sưu tập của bạn..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Ảnh</label>
+          <div class="upload-area" id="upload-area">
+            <input type="file" id="file-input" accept="image/*" multiple style="display:none">
+            <div class="upload-icon">
+              <span class="material-icons" style="font-size:inherit">cloud_upload</span>
+            </div>
+            <div class="upload-text">Kéo thả ảnh vào đây hoặc nhấp để chọn</div>
+            <div class="upload-hint">Hỗ trợ: JPG, PNG, WEBP (tối đa 10 ảnh)</div>
+          </div>
+          <div class="preview-grid" id="preview-grid"></div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+        <button class="btn btn-primary" id="save-collection">Lưu bộ sưu tập</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const esc = s => (s||'').toString().replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+    const catLabel = t => ({tour:'Du lịch', service:'Sản phẩm', event:'Sự kiện'})[t] || 'Khác';
+
+    // Store uploaded images temporarily
+    let uploadedImages = [];
+
+    // Load saved data
+    const savedIds = JSON.parse(localStorage.getItem('qn_bookmarks') || '[]');
+    const collections = JSON.parse(localStorage.getItem('qn_collections') || '[]');
+    
+    // Update stats
+    document.getElementById('total-saved').textContent = savedIds.length;
+    document.getElementById('total-collections').textContent = collections.length;
+    document.getElementById('total-photos').textContent = collections.reduce((sum, c) => sum + (c.photos?.length || 0), 0);
+
+    // Load spots data
+    fetch('data/spots.json')
+      .then(r => r.json())
+      .then(spots => {
+        const savedSpots = spots.filter(s => savedIds.includes(s.id));
+        renderFavorites(savedSpots);
+        renderCollections(collections);
+      })
+      .catch(() => {
+        document.getElementById('favorites-grid').innerHTML = '<div class="empty-state"><span class="material-icons">error_outline</span><h3>Không tải được dữ liệu</h3></div>';
+      });
+
+    function renderFavorites(spots) {
+      const grid = document.getElementById('favorites-grid');
+      if (spots.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><span class="material-icons">bookmark_border</span><h3>Chưa có địa điểm yêu thích</h3><p>Khám phá và lưu những địa điểm bạn thích trên bản đồ</p></div>';
+        return;
+      }
+
+      grid.innerHTML = spots.map(s => `
+        <div class="fav-card" style="position:relative" data-id="${esc(s.id)}">
+          <button class="remove-btn" onclick="removeFavorite('${esc(s.id)}')">
+            <span class="material-icons" style="font-size:16px">close</span>
+          </button>
+          <img src="${esc(s.thumb || 'images/placeholder.jpg')}" alt="${esc(s.name)}">
+          <div class="fav-info">
+            <h4>${esc(s.name)}</h4>
+            <span class="fav-badge">${catLabel(s.category)}</span>
+            <p>${esc((s.desc || '').slice(0, 80))}</p>
+          </div>
+        </div>
+      `).join('');
+
+      // Click handlers
+      grid.querySelectorAll('.fav-card').forEach(card => {
+        card.onclick = (e) => {
+          if (e.target.closest('.remove-btn')) return;
+          window.location.href = `detail.html?id=${card.dataset.id}`;
+        };
+      });
+    }
+
+    function renderCollections(collections) {
+      const grid = document.getElementById('collections-grid');
+      const existingBtn = grid.querySelector('.new-collection-btn');
+      
+      const html = collections.map(c => {
+        const photos = c.photos || [];
+        const preview = photos.slice(0, 4);
+        return `
+          <div class="collection-card" data-id="${esc(c.id)}">
+            <div class="collection-preview">
+              ${preview.map(p => `<img src="${esc(p)}" alt="">`).join('')}
+              ${preview.length < 4 ? '<div style="background:#f1f5f9"></div>'.repeat(4 - preview.length) : ''}
+              <div class="collection-count">${photos.length} ảnh</div>
+            </div>
+            <div class="collection-info">
+              <h4>${esc(c.name || 'Bộ sưu tập')}</h4>
+              <p>${esc(c.description || 'Không có mô tả')}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      grid.innerHTML = html;
+      if (existingBtn) grid.appendChild(existingBtn);
+    }
+
+    window.removeFavorite = (id) => {
+      const saved = JSON.parse(localStorage.getItem('qn_bookmarks') || '[]');
+      const updated = saved.filter(sid => sid !== id);
+      localStorage.setItem('qn_bookmarks', JSON.stringify(updated));
+      location.reload();
+    };
+
+    // Share buttons
+    document.getElementById('share-favorites').onclick = async () => {
+      const url = `${location.origin}/profile.html`;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: 'Địa điểm yêu thích của tôi', url });
+        } catch(e) {}
+      } else {
+        await navigator.clipboard.writeText(url);
+        alert('Đã copy liên kết!');
+      }
+    };
+
+    document.getElementById('share-collections').onclick = async () => {
+      const url = `${location.origin}/profile.html`;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: 'Bộ sưu tập của tôi', url });
+        } catch(e) {}
+      } else {
+        await navigator.clipboard.writeText(url);
+        alert('Đã copy liên kết!');
+      }
+    };
+
+    // New collection - Open modal
+    document.getElementById('new-collection').onclick = () => {
+      document.getElementById('collection-modal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    };
+
+    // Close modal function
+    window.closeModal = () => {
+      document.getElementById('collection-modal').classList.remove('active');
+      document.body.style.overflow = '';
+      // Reset form
+      document.getElementById('collection-name').value = '';
+      document.getElementById('collection-desc').value = '';
+      document.getElementById('preview-grid').innerHTML = '';
+      uploadedImages = [];
+    };
+
+    // Upload area functionality
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const previewGrid = document.getElementById('preview-grid');
+
+    uploadArea.onclick = () => fileInput.click();
+
+    // Drag and drop handlers
+    uploadArea.ondragover = (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    };
+
+    uploadArea.ondragleave = () => {
+      uploadArea.classList.remove('dragover');
+    };
+
+    uploadArea.ondrop = (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    };
+
+    fileInput.onchange = (e) => {
+      handleFiles(e.target.files);
+    };
+
+    function handleFiles(files) {
+      const maxFiles = 10;
+      const fileArray = Array.from(files).slice(0, maxFiles - uploadedImages.length);
+      
+      fileArray.forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          uploadedImages.push(e.target.result);
+          renderPreviews();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderPreviews() {
+      previewGrid.innerHTML = uploadedImages.map((src, index) => `
+        <div class="preview-item">
+          <img src="${src}" alt="Preview ${index + 1}">
+          <button class="preview-remove" onclick="removeImage(${index})">
+            <span class="material-icons" style="font-size:14px">close</span>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    window.removeImage = (index) => {
+      uploadedImages.splice(index, 1);
+      renderPreviews();
+    };
+
+    // Save collection
+    document.getElementById('save-collection').onclick = () => {
+      const name = document.getElementById('collection-name').value.trim();
+      const description = document.getElementById('collection-desc').value.trim();
+      
+      if (!name) {
+        alert('Vui lòng nhập tên bộ sưu tập');
+        return;
+      }
+      
+      const collections = JSON.parse(localStorage.getItem('qn_collections') || '[]');
+      collections.push({
+        id: 'col_' + Date.now(),
+        name,
+        description,
+        photos: uploadedImages,
+        created: new Date().toISOString()
+      });
+      localStorage.setItem('qn_collections', JSON.stringify(collections));
+      closeModal();
+      location.reload();
+    };
+
+    // Close modal on overlay click
+    document.getElementById('collection-modal').onclick = (e) => {
+      if (e.target.id === 'collection-modal') {
+        closeModal();
+      }
+    };
+  </script>
+</body>
+</html>

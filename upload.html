@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thêm địa điểm Quảng Ninh</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(to bottom, #e8f4f8 0%, #f8f9fa 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    .header-banner {
+      background: linear-gradient(135deg, #2c5282 0%, #3a7ca5 100%);
+      padding: 32px 48px;
+      color: white;
+    }
+
+    .header-banner h2 {
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .header-banner p {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .form-content {
+      padding: 40px 48px 48px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #2c5282;
+      font-size: 14px;
+    }
+
+    label span {
+      color: #e74c3c;
+      margin-left: 2px;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #d1e7f0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.2s ease;
+      background: white;
+      color: #212529;
+      font-family: inherit;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #3a7ca5;
+      background: #f8fcff;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.6;
+    }
+
+    .coord-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .note {
+      color: #6c757d;
+      font-size: 13px;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    /* Custom File Upload Button */
+    .file-upload-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .file-upload-wrapper input[type="file"] {
+      position: absolute;
+      left: -9999px;
+    }
+
+    .file-upload-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      font-size: 15px;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .file-upload-label:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .file-upload-label:active {
+      transform: translateY(0);
+    }
+
+    .file-upload-label svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .file-preview {
+      margin-top: 12px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+      display: none;
+    }
+
+    .file-preview.active {
+      display: block;
+    }
+
+    .file-preview img {
+      max-width: 100%;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .file-preview-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #495057;
+    }
+
+    .file-preview-name {
+      font-weight: 500;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-right: 12px;
+    }
+
+    .file-remove-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .file-remove-btn:hover {
+      background: #c82333;
+    }
+
+    .media-list {
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      background: #f8f9fa;
+    }
+
+    .media-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: white;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .media-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .media-item-info {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .media-item-icon {
+      font-size: 20px;
+    }
+
+    .media-item-text {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .media-item-type {
+      font-weight: 600;
+      color: #2c5282;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .media-item-url {
+      color: #6c757d;
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .media-item button {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .media-item button:hover {
+      background: #c82333;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 40px;
+      padding-top: 32px;
+      border-top: 1px solid #e8f4f8;
+    }
+
+    button[type="submit"] {
+      flex: 1;
+      padding: 13px 24px;
+      background: linear-gradient(135deg, #2c5282 0%, #3a7ca5 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(44, 82, 130, 0.2);
+    }
+
+    button[type="submit"]:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(44, 82, 130, 0.3);
+    }
+
+    button[type="submit"]:active {
+      transform: translateY(0);
+    }
+
+    .btn-add-media {
+      width: 100%;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 12px;
+      box-shadow: 0 2px 6px rgba(40, 167, 69, 0.2);
+    }
+
+    .btn-add-media:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    .back-link {
+      padding: 13px 24px;
+      background: white;
+      color: #3a7ca5;
+      text-decoration: none;
+      border: 2px solid #d1e7f0;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      text-align: center;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+
+    .back-link:hover {
+      background: #f8fcff;
+      border-color: #3a7ca5;
+    }
+
+    .section-divider {
+      margin: 32px 0;
+      border-top: 2px solid #e8f4f8;
+      padding-top: 24px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2c5282;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .media-type-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .media-tab {
+      flex: 1;
+      padding: 10px 16px;
+      background: white;
+      border: 2px solid #d1e7f0;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 500;
+      font-size: 14px;
+      color: #6c757d;
+      transition: all 0.2s ease;
+    }
+
+    .media-tab:hover {
+      border-color: #3a7ca5;
+      color: #3a7ca5;
+    }
+
+    .media-tab.active {
+      background: #3a7ca5;
+      color: white;
+      border-color: #3a7ca5;
+    }
+
+    .media-input-group {
+      display: none;
+    }
+
+    .media-input-group.active {
+      display: block;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 20px 16px;
+      }
+
+      .header-banner {
+        padding: 24px 24px;
+      }
+
+      .header-banner h2 {
+        font-size: 22px;
+      }
+
+      .form-content {
+        padding: 32px 24px;
+      }
+
+      .coord-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .media-type-tabs {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-banner">
+      <h2>Thêm địa điểm mới</h2>
+      <p>Đóng góp thông tin địa điểm du lịch tại Quảng Ninh</p>
+    </div>
+
+    <div class="form-content">
+      <form id="uploadForm">
+        <!-- Basic Info -->
+        <div class="form-group">
+          <label for="name">Tên địa điểm <span>*</span></label>
+          <input type="text" id="name" placeholder="Vịnh Hạ Long" required />
+        </div>
+
+        <div class="form-group">
+          <label for="type">Loại địa điểm <span>*</span></label>
+          <select id="type" required>
+            <option value="">-- Chọn loại --</option>
+            <option value="eat">🍽️ Ăn uống</option>
+            <option value="play">🎡 Vui chơi</option>
+            <option value="stay">🏨 Lưu trú</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Danh mục <span>*</span></label>
+          <select id="category" required>
+            <option value="">-- Chọn danh mục --</option>
+            <option value="tour">Du lịch</option>
+            <option value="service">Sản phẩm</option>
+            <option value="event">Sự kiện</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="desc">Mô tả</label>
+          <textarea id="desc" rows="3" placeholder="Giới thiệu ngắn gọn về địa điểm"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="address">Địa chỉ</label>
+          <input type="text" id="address" placeholder="123 Đường ABC, Quận 1" />
+        </div>
+
+        <div class="form-group">
+          <label for="hours">Giờ mở cửa</label>
+          <input type="text" id="hours" placeholder="8:00 - 22:00" />
+        </div>
+
+        <!-- Coordinates -->
+        <div class="form-group">
+          <label>Tọa độ <span>*</span></label>
+          <div class="coord-grid">
+            <input type="text" id="lat" placeholder="Latitude: 10.762622" required />
+            <input type="text" id="lng" placeholder="Longitude: 106.660172" required />
+          </div>
+          <div class="note">Có thể lấy tọa độ từ Google Maps</div>
+        </div>
+
+        <!-- Thumbnail Section -->
+        <div class="section-divider">
+          <h3 class="section-title">
+            <span>🖼️</span>
+            <span>Ảnh đại diện</span>
+          </h3>
+
+          <div class="form-group">
+            <div class="file-upload-wrapper">
+              <input type="file" id="thumbFile" accept="image/*" />
+              <label for="thumbFile" class="file-upload-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                </svg>
+                <span>Chọn ảnh thumbnail</span>
+              </label>
+            </div>
+            <div class="note">Kích thước đề xuất: 800x600px, tối đa 2MB</div>
+            <div id="thumbPreview" class="file-preview"></div>
+          </div>
+        </div>
+
+        <!-- Media Section -->
+        <div class="section-divider">
+          <h3 class="section-title">
+            <span>📸</span>
+            <span>Ảnh & Video</span>
+          </h3>
+
+          <div class="media-type-tabs">
+            <div class="media-tab active" data-tab="image">📷 Ảnh</div>
+            <div class="media-tab" data-tab="video">🎬 Video</div>
+            <div class="media-tab" data-tab="youtube">▶️ YouTube</div>
+          </div>
+
+          <!-- Image Upload -->
+          <div class="media-input-group active" id="imageInput">
+            <div class="file-upload-wrapper">
+              <input type="file" id="imageFile" accept="image/*" multiple />
+              <label for="imageFile" class="file-upload-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="M21 15l-5-5L5 21"/>
+                </svg>
+                <span>Chọn ảnh</span>
+              </label>
+            </div>
+            <div class="note">Có thể chọn nhiều ảnh cùng lúc</div>
+          </div>
+
+          <!-- Video Upload -->
+          <div class="media-input-group" id="videoInput">
+            <div class="file-upload-wrapper">
+              <input type="file" id="videoFile" accept="video/*" />
+              <label for="videoFile" class="file-upload-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="23 7 16 12 23 17 23 7"/>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+                <span>Chọn video</span>
+              </label>
+            </div>
+            <div class="note">Tối đa 10MB. Định dạng: MP4, WebM</div>
+          </div>
+
+          <!-- YouTube URL -->
+          <div class="media-input-group" id="youtubeInput">
+            <input type="url" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." />
+            <button type="button" class="btn-add-media" id="addYoutubeBtn">+ Thêm video YouTube</button>
+          </div>
+
+          <div id="mediaList" class="media-list" style="display: none;">
+            <!-- Media items will be added here -->
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit"> Lưu địa điểm</button>
+          <a href="index.html" class="back-link">← Quay lại</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const mediaList = document.getElementById('mediaList');
+    let mediaItems = [];
+    let thumbnailData = null;
+
+    // Media tabs
+    const tabs = document.querySelectorAll('.media-tab');
+    const inputGroups = document.querySelectorAll('.media-input-group');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        inputGroups.forEach(g => g.classList.remove('active'));
+        
+        tab.classList.add('active');
+        const targetTab = tab.dataset.tab;
+        document.getElementById(targetTab + 'Input').classList.add('active');
+      });
+    });
+
+    // Thumbnail upload
+    document.getElementById('thumbFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        alert('⚠️ Ảnh quá lớn! Vui lòng chọn ảnh dưới 2MB');
+        e.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        thumbnailData = event.target.result;
+        const preview = document.getElementById('thumbPreview');
+        preview.innerHTML = `
+          <img src="${thumbnailData}" alt="Thumbnail preview" />
+          <div class="file-preview-info">
+            <span class="file-preview-name">${file.name}</span>
+            <button type="button" class="file-remove-btn" onclick="removeThumb()">Xóa</button>
+          </div>
+        `;
+        preview.classList.add('active');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    window.removeThumb = () => {
+      thumbnailData = null;
+      document.getElementById('thumbFile').value = '';
+      document.getElementById('thumbPreview').classList.remove('active');
+    };
+
+    // Image upload (multiple)
+    document.getElementById('imageFile').addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      
+      files.forEach(file => {
+        if (file.size > 2 * 1024 * 1024) {
+          alert(`⚠️ ${file.name} quá lớn! Bỏ qua.`);
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          mediaItems.push({
+            type: 'image',
+            url: event.target.result,
+            name: file.name
+          });
+          renderMediaList();
+        };
+        reader.readAsDataURL(file);
+      });
+
+      e.target.value = '';
+    });
+
+    // Video upload
+    document.getElementById('videoFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 10 * 1024 * 1024) {
+        alert('⚠️ Video quá lớn! Vui lòng chọn video dưới 10MB');
+        e.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        mediaItems.push({
+          type: 'video',
+          url: event.target.result,
+          name: file.name
+        });
+        renderMediaList();
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    });
+
+    // YouTube URL
+    document.getElementById('addYoutubeBtn').addEventListener('click', () => {
+      const url = document.getElementById('youtubeUrl').value.trim();
+      
+      if (!url) {
+        alert('⚠️ Vui lòng nhập URL YouTube');
+        return;
+      }
+
+      if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
+        alert('⚠️ URL không hợp lệ. Vui lòng nhập link YouTube');
+        return;
+      }
+
+      mediaItems.push({
+        type: 'youtube',
+        url: url,
+        name: 'YouTube Video'
+      });
+      
+      renderMediaList();
+      document.getElementById('youtubeUrl').value = '';
+    });
+
+    // Render media list
+    function renderMediaList() {
+      if (mediaItems.length === 0) {
+        mediaList.style.display = 'none';
+        return;
+      }
+
+      mediaList.style.display = 'block';
+      mediaList.innerHTML = mediaItems.map((item, index) => {
+        const icon = item.type === 'image' ? '🖼️' : item.type === 'video' ? '🎬' : '▶️';
+        const displayUrl = item.url.length > 50 ? item.url.substring(0, 50) + '...' : item.url;
+        
+        return `
+          <div class="media-item">
+            <div class="media-item-info">
+              <span class="media-item-icon">${icon}</span>
+              <div class="media-item-text">
+                <div class="media-item-type">${item.type}</div>
+                <div class="media-item-url">${item.name || displayUrl}</div>
+              </div>
+            </div>
+            <button type="button" onclick="removeMedia(${index})">Xóa</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Remove media item
+    window.removeMedia = (index) => {
+      mediaItems.splice(index, 1);
+      renderMediaList();
+    };
+
+    // Form submit
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const type = document.getElementById('type').value;
+      const category = document.getElementById('category').value;
+      const desc = document.getElementById('desc').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const hours = document.getElementById('hours').value.trim();
+      const lat = parseFloat(document.getElementById('lat').value);
+      const lng = parseFloat(document.getElementById('lng').value);
+
+      // Validation
+      if (!name || !type || !category) {
+        alert('⚠️ Vui lòng điền đầy đủ thông tin bắt buộc (*)');
+        return;
+      }
+
+      if (isNaN(lat) || isNaN(lng)) {
+        alert('⚠️ Tọa độ không hợp lệ');
+        return;
+      }
+
+      // Create spot object
+      const spot = {
+        id: 'user-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+        name,
+        type,
+        category,
+        lat,
+        lng,
+        address: address || '',
+        hours: hours || 'Không rõ',
+        desc: desc || '',
+        thumb: thumbnailData || 'images/placeholder.jpg',
+        media: mediaItems.length > 0 ? mediaItems : [],
+        reviews: []
+      };
+
+      // Save to localStorage
+      saveSpot(spot);
+    });
+
+    function saveSpot(spot) {
+      try {
+        // Get existing user spots
+        const userSpots = JSON.parse(localStorage.getItem('qn_user_spots') || '[]');
+        
+        // Add new spot
+        userSpots.push(spot);
+        
+        // Save back
+        localStorage.setItem('qn_user_spots', JSON.stringify(userSpots));
+        
+        alert('✅ Đã lưu địa điểm thành công!\n\n📍 ' + spot.name + '\n\nMở trang chủ để xem trên bản đồ.');
+        window.location.href = 'index.html';
+      } catch (e) {
+        console.error(e);
+        if (e.name === 'QuotaExceededError') {
+          alert('❌ Dung lượng lưu trữ đã đầy!\n\nVui lòng xóa bớt địa điểm cũ hoặc giảm kích thước ảnh/video.');
+        } else {
+          alert('❌ Lưu thất bại. Vui lòng thử lại.');
+        }
+      }
+    }
+
+    // Auto-fill demo data (for testing)
+    if (location.search.includes('demo=1')) {
+      document.getElementById('name').value = 'Vịnh Hạ Long';
+      document.getElementById('type').value = 'play';
+      document.getElementById('category').value = 'tour';
+      document.getElementById('desc').value = 'Di sản thiên nhiên thế giới với hàng nghìn hòn đảo đá vôi';
+      document.getElementById('address').value = 'Quảng Ninh, Việt Nam';
+      document.getElementById('hours').value = '6:00 - 18:00';
+      document.getElementById('lat').value = '20.9101';
+      document.getElementById('lng').value = '107.1839';
+    }
+  </script>
+</body>
+</html>

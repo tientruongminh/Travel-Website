@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chi tiết địa điểm</title>
+
+  <!-- SEO basics -->
+  <meta name="description" content="Khám phá chi tiết địa điểm với hình ảnh, video, đánh giá cộng đồng và chỉ đường." />
+  <meta name="keywords" content="địa điểm, du lịch, đánh giá, chỉ đường" />
+  <meta name="robots" content="index, follow" />
+  <link rel="preconnect" href="https://i.pravatar.cc" />
+  <link rel="preconnect" href="https://images.unsplash.com" />
+  <link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --card: #ffffff;
+      --ink: #1e293b;
+      --muted: #64748b;
+      --line: #e5e7eb;
+      --brand: #10b981;
+      --brand-dark: #047857;
+      --brand-ink: #ffffff;
+      --badge-bg: #d1fae5;
+      --badge-ink: #065f46;
+      --radius-lg: 12px;
+      --radius-md: 8px;
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
+      --focus: 0 0 0 4px rgba(16,185,129,0.3);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --star-color: #facc15;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a { color: var(--brand); text-decoration: none; transition: var(--transition); }
+    a:hover { color: var(--brand-dark); }
+    a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: none; box-shadow: var(--focus); }
+
+    .wrap {
+      max-width: 1024px;
+      margin: 32px auto;
+      padding: 0 20px 64px;
+    }
+
+    .back {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .back:hover { color: var(--brand); }
+    .back svg { width: 20px; height: 20px; stroke-width: 2; }
+
+    .hero {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: #000;
+      box-shadow: var(--shadow-lg);
+      transition: transform var(--transition);
+    }
+    .hero:hover { transform: translateY(-4px); }
+    .hero-media {
+      width: 100%;
+      height: clamp(280px, 55vh, 480px);
+      display: block;
+      object-fit: cover;
+      transition: opacity var(--transition);
+    }
+    .hero-media:hover { opacity: 0.95; }
+    .ratio {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+    }
+    .ratio > iframe, .ratio > video, .ratio > img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .head {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin: 24px 0 12px;
+      flex-wrap: wrap;
+    }
+    .title {
+      font-size: clamp(24px, 3.5vw, 32px);
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+    }
+    .badge {
+      background: var(--badge-bg);
+      color: var(--badge-ink);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .meta {
+      display: grid;
+      gap: 8px 24px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      color: var(--muted);
+      font-size: 14px;
+      margin: 8px 0 16px;
+    }
+    .meta b { color: var(--ink); font-weight: 600; }
+    .rating { display: flex; align-items: center; gap: 8px; }
+    .rating-stars { color: var(--star-color); font-size: 16px; }
+    .rating-value { font-weight: 600; color: var(--ink); }
+
+    .desc {
+      font-size: 16px;
+      color: var(--ink);
+      line-height: 1.6;
+      margin: 0 0 20px;
+      max-width: 720px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 20px 0 12px;
+    }
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      background: var(--card);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 500;
+      color: var(--ink);
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+    }
+    .btn:hover { background: #f1f5f9; transform: translateY(-2px); }
+    .btn[disabled] { opacity: 0.6; cursor: not-allowed; }
+    .btn.primary {
+      background: var(--brand);
+      color: var(--brand-ink);
+      border-color: var(--brand);
+    }
+    .btn.primary:hover { background: var(--brand-dark); }
+
+    .section-title {
+      font-size: 20px;
+      margin: 32px 0 16px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+    .grid > * { grid-column: span 12; }
+    @media (min-width: 640px) { .grid > * { grid-column: span 6; } }
+    @media (min-width: 960px) { .grid > * { grid-column: span 4; } }
+
+    .tile {
+      position: relative;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #000;
+      transition: transform var(--transition);
+    }
+    .tile:hover { transform: translateY(-4px); }
+    .tile img, .tile video, .tile iframe {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      transition: opacity var(--transition);
+    }
+    .tile img:hover, .tile video:hover { opacity: 0.9; }
+
+    /* Lightbox */
+    dialog.lightbox {
+      width: min(90vw, 1080px);
+      border: 0;
+      border-radius: var(--radius-lg);
+      padding: 0;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      background: var(--card);
+    }
+    dialog.lightbox::backdrop { background: rgba(2,6,23,0.75); }
+    .lightbox-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+    }
+    .lightbox-body {
+      background: #000;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+    }
+    .lightbox-body img, .lightbox-body video, .lightbox-body iframe {
+      width: 100%;
+      height: auto;
+      max-height: 80vh;
+      object-fit: contain;
+    }
+
+    /* Review cards */
+    .reviews { display: grid; gap: 16px; }
+    .review {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      background: var(--card);
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+    }
+    .review:hover { transform: translateY(-2px); }
+    .review .who { font-weight: 600; color: var(--ink); font-size: 15px; }
+    .review .row { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+    .review .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--line);
+    }
+    .review .text { font-size: 15px; color: var(--ink); line-height: 1.6; }
+    .review .stars { color: var(--star-color); font-size: 14px; margin-top: 4px; }
+
+    /* Comment form */
+    .comment-form {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-top: 24px;
+      box-shadow: var(--shadow-md);
+    }
+    .comment-form h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 16px;
+    }
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      font: inherit;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .star-rating { display: flex; gap: 8px; font-size: 20px; }
+    .star-rating input { display: none; }
+    .star-rating label {
+      cursor: pointer;
+      color: #d1d5db;
+      transition: color var(--transition);
+    }
+    .star-rating label:hover, .star-rating input:checked ~ label, .star-rating label:hover ~ label {
+      color: var(--star-color);
+    }
+    .form-actions { display: flex; gap: 12px; justify-content: flex-end; }
+    .form-actions .btn { padding: 10px 20px; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 24px;
+      background: rgba(2,6,23,0.95);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(-8px); }
+
+    /* Skeletons */
+    .skeleton {
+      background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+      background-size: 400% 100%;
+      animation: shimmer 1.4s infinite linear;
+    }
+    @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+    .hero.skel { height: clamp(280px, 55vh, 480px); border-radius: var(--radius-lg); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toast, .tile, .hero, .btn, .review { transition: none; }
+      .skeleton { animation: none; }
+    }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 0 16px 48px; }
+      .hero-media { height: clamp(200px, 45vh, 360px); }
+      .tile img, .tile video, .tile iframe { height: 160px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="app" data-state="loading" aria-busy="true">
+    <a class="back" href="index.html" aria-label="Quay lại bản đồ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+      <span>Quay lại bản đồ</span>
+    </a>
+
+    <div id="hero" class="hero skel" aria-live="polite" aria-label="Hình ảnh hoặc video nổi bật"></div>
+
+    <header class="head" id="head">
+      <h1 id="title" class="title">&nbsp;</h1>
+      <span id="badge" class="badge" aria-label="Loại địa điểm"></span>
+    </header>
+
+    <section id="meta" class="meta"></section>
+    <p id="desc" class="desc"></p>
+
+    <div class="actions" role="group" aria-label="Thao tác">
+      <button id="saveBtn" class="btn" type="button" aria-pressed="false">
+        <i class="fas fa-heart" style="margin-right: 8px;"></i> Lưu địa điểm
+      </button>
+      <button id="shareBtn" class="btn" type="button">
+        <i class="fas fa-share-alt" style="margin-right: 8px;"></i> Chia sẻ
+      </button>
+      <a id="dirBtn" class="btn primary" target="_blank" rel="noopener" href="#" role="button">
+        <i class="fas fa-map-signs" style="margin-right: 8px;"></i> Chỉ đường
+      </a>
+    </div>
+
+    <h2 class="section-title">Bộ sưu tập</h2>
+    <div id="gallery" class="grid" aria-live="polite"></div>
+
+    <h2 class="section-title">Đánh giá từ cộng đồng</h2>
+    <div id="reviews" class="reviews"></div>
+
+    <div class="comment-form">
+      <h3>Thêm đánh giá của bạn</h3>
+      <div class="form-group">
+        <label for="commentName">Tên của bạn</label>
+        <input type="text" id="commentName" placeholder="Nhập tên của bạn" required />
+      </div>
+      <div class="form-group">
+        <label>Đánh giá</label>
+        <div class="star-rating">
+          <input type="radio" id="star5" name="rating" value="5" required />
+          <label for="star5" title="5 sao"><i class="fas fa-star"></i></label>
+          <input type="radio" id="star4" name="rating" value="4" />
+          <label for="star4" title="4 sao"><i class="fas fa-star"></i></label>
+          <input type="radio" id="star3" name="rating" value="3" />
+          <label for="star3" title="3 sao"><i class="fas fa-star"></i></label>
+          <input type="radio" id="star2" name="rating" value="2" />
+          <label for="star2" title="2 sao"><i class="fas fa-star"></i></label>
+          <input type="radio" id="star1" name="rating" value="1" />
+          <label for="star1" title="1 sao"><i class="fas fa-star"></i></label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="commentText">Bình luận</label>
+        <textarea id="commentText" placeholder="Chia sẻ trải nghiệm của bạn..." required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="commentImage">Hình ảnh (tùy chọn)</label>
+        <input type="file" id="commentImage" accept="image/*" />
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn" id="cancelComment">Hủy</button>
+        <button type="button" class="btn primary" id="submitComment">Gửi đánh giá</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox viewer -->
+  <dialog id="lightbox" class="lightbox" aria-label="Xem lớn phương tiện">
+    <div class="lightbox-header">
+      <strong id="lightboxTitle">Xem chi tiết</strong>
+      <button id="lightboxClose" class="btn" type="button" aria-label="Đóng">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="lightbox-body" id="lightboxBody"></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function() {
+      const $ = (s, root = document) => root.querySelector(s);
+      const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
+      const app = $('#app');
+
+      const params = new URLSearchParams(location.search);
+      const idFromPath = (location.pathname.split('/').pop() || '').replace(/\.html$/, '') || null;
+      const id = params.get('id') || idFromPath || '';
+
+      const escMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+      const esc = (v) => String(v ?? '').replace(/[&<>"']/g, m => escMap[m]);
+
+      const catLabel = (t) => ({ tour: 'Du lịch', service: 'Sản phẩm', event: 'Sự kiện', evt: 'Sự kiện', svc: 'Sản phẩm' }[t] || 'Khác');
+      const typeIcon = (t) => ({ eat: '🍽️', play: '🎡', stay: '🏨' }[t] || '📍');
+      const gmaps = (lat, lng) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+      const hero = $('#hero');
+      const titleEl = $('#title');
+      const badgeEl = $('#badge');
+      const metaEl = $('#meta');
+      const descEl = $('#desc');
+      const galEl = $('#gallery');
+      const revEl = $('#reviews');
+      const dirBtn = $('#dirBtn');
+      const saveBtn = $('#saveBtn');
+      const shareBtn = $('#shareBtn');
+      const toast = $('#toast');
+      const lightbox = $('#lightbox');
+      const lightboxBody = $('#lightboxBody');
+      const lightboxClose = $('#lightboxClose');
+      const commentForm = {
+        name: $('#commentName'),
+        rating: $$('input[name="rating"]'),
+        text: $('#commentText'),
+        image: $('#commentImage'),
+        submit: $('#submitComment'),
+        cancel: $('#cancelComment')
+      };
+
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        window.setTimeout(() => toast.classList.remove('show'), 2000);
+      }
+
+      function asIframeYouTube(url, opts = { hero: false }) {
+        const u = String(url)
+          .replace('watch?v=', 'embed/')
+          .replace('youtu.be/', 'www.youtube-nocookie.com/embed/');
+        const allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        const iframe = `<iframe src="${esc(u)}" title="YouTube video" frameborder="0" allow="${allow}" allowfullscreen loading="lazy"></iframe>`;
+        return opts.hero ? `<div class="ratio">${iframe}</div>` : iframe;
+      }
+
+      function renderHeroMedia(first) {
+        hero.classList.remove('skel');
+        if (!first) {
+          hero.innerHTML = `<img class="hero-media" src="images/placeholder.jpg" alt="Hình mặc định" loading="eager" />`;
+          return;
+        }
+        const t = (first.type || '').toLowerCase();
+        if (t === 'youtube') {
+          hero.innerHTML = asIframeYouTube(first.url, { hero: true });
+        } else if (t === 'video') {
+          hero.innerHTML = `<video class="hero-media" controls preload="metadata"><source src="${esc(first.url)}"></video>`;
+        } else {
+          hero.innerHTML = `<img class="hero-media" src="${esc(first.url)}" alt="Hình nổi bật" loading="eager" />`;
+        }
+      }
+
+      function openLightbox(node, title = 'Xem chi tiết') {
+        lightboxBody.innerHTML = '';
+        $('#lightboxTitle').textContent = title;
+        lightboxBody.appendChild(node);
+        if (typeof lightbox.showModal === 'function') lightbox.showModal();
+        else lightbox.setAttribute('open', '');
+      }
+
+      function closeLightbox() {
+        if (typeof lightbox.close === 'function') lightbox.close();
+        else lightbox.removeAttribute('open');
+      }
+
+      lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+      lightboxClose.addEventListener('click', closeLightbox);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && lightbox.open) closeLightbox(); });
+
+      function buildGallery(mediaList, thumb) {
+        galEl.innerHTML = '';
+        const list = Array.isArray(mediaList) ? mediaList : [];
+        if (list.length === 0 && thumb) {
+          const img = document.createElement('img');
+          img.loading = 'lazy';
+          img.alt = 'Ảnh minh họa';
+          img.src = thumb;
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          tile.appendChild(img);
+          tile.addEventListener('click', () => openLightbox(img.cloneNode(true), 'Ảnh'));
+          galEl.appendChild(tile);
+          return;
+        }
+
+        list.forEach((m, idx) => {
+          const t = (m.type || '').toLowerCase();
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          if (t === 'video') {
+            const v = document.createElement('video');
+            v.controls = true;
+            v.preload = 'metadata';
+            v.innerHTML = `<source src="${esc(m.url)}">`;
+            tile.appendChild(v);
+            tile.addEventListener('click', (ev) => {
+              if (ev.target.tagName.toLowerCase() === 'video') return;
+              const big = document.createElement('video');
+              big.controls = true; big.preload = 'metadata';
+              big.innerHTML = `<source src="${esc(m.url)}">`;
+              openLightbox(big, `Video ${idx+1}`);
+            });
+          } else if (t === 'youtube') {
+            const placeholder = document.createElement('img');
+            placeholder.loading = 'lazy';
+            placeholder.alt = 'YouTube';
+            try {
+              const vid = new URL(m.url).searchParams.get('v') || m.url.split('/').pop();
+              placeholder.src = `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`;
+            } catch { placeholder.src = thumb || 'images/placeholder.jpg'; }
+            tile.appendChild(placeholder);
+            tile.addEventListener('click', () => {
+              const wrap = document.createElement('div');
+              wrap.innerHTML = asIframeYouTube(m.url);
+              openLightbox(wrap.firstChild, 'YouTube');
+            });
+          } else {
+            const img = document.createElement('img');
+            img.loading = 'lazy';
+            img.src = m.url;
+            img.alt = `Ảnh ${idx+1}`;
+            tile.appendChild(img);
+            tile.addEventListener('click', () => openLightbox(img.cloneNode(true), `Ảnh ${idx+1}`));
+          }
+          galEl.appendChild(tile);
+        });
+      }
+
+      function renderStars(rating) {
+        const stars = Math.round(Number(rating));
+        return Array(5).fill().map((_, i) => 
+          `<i class="fas fa-star${i < stars ? '' : '-o'}"></i>`
+        ).join('');
+      }
+
+      function calculateAverageRating(reviews) {
+        if (!Array.isArray(reviews) || reviews.length === 0) return 0;
+        const total = reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0);
+        return (total / reviews.length).toFixed(1);
+      }
+
+      function renderReviews(reviews, spotId) {
+        const list = Array.isArray(reviews) && reviews.length ? reviews : [
+          { who: 'Minh Anh', avatar: 'https://i.pravatar.cc/40?img=12', text: 'Không gian đẹp, dịch vụ tốt, rất đáng trải nghiệm!', rating: 5 },
+          { who: 'Hữu Tín', avatar: 'https://i.pravatar.cc/40?img=22', text: 'Nên đi buổi chiều để ngắm hoàng hôn, ảnh lên rất đã.', rating: 4 }
+        ];
+
+        // Load user-submitted reviews from localStorage
+        const storedReviews = JSON.parse(localStorage.getItem(`reviews_${spotId}`) || '[]');
+        const allReviews = [...list, ...storedReviews];
+
+        revEl.innerHTML = allReviews.map(r => `
+          <article class="review">
+            <div class="row">
+              <img class="avatar" src="${esc(r.avatar || 'https://i.pravatar.cc/40')}" width="40" height="40" alt="" />
+              <div class="who">${esc(r.who || 'Ẩn danh')}</div>
+            </div>
+            <div class="stars">${renderStars(r.rating)}</div>
+            <div class="text">${esc(r.text || '')}</div>
+            ${r.img ? `<img src="${esc(r.img)}" alt="Ảnh đánh giá" style="margin-top:12px;width:100%;max-height:280px;object-fit:cover;border-radius:10px">` : ''}
+          </article>
+        `).join('');
+
+        return allReviews;
+      }
+
+      function hydrateActions(s) {
+        saveBtn.addEventListener('click', () => {
+          const key = 'qn_saved';
+          const saved = JSON.parse(localStorage.getItem(key) || '[]');
+          if (!saved.includes(s.id)) {
+            saved.push(s.id);
+            localStorage.setItem(key, JSON.stringify(saved));
+            saveBtn.setAttribute('aria-pressed', 'true');
+            saveBtn.innerHTML = '<i class="fas fa-heart" style="margin-right: 8px;"></i> Đã lưu ✓';
+            showToast('Đã lưu địa điểm');
+          } else {
+            const idx = saved.indexOf(s.id);
+            saved.splice(idx, 1);
+            localStorage.setItem(key, JSON.stringify(saved));
+            saveBtn.setAttribute('aria-pressed', 'false');
+            saveBtn.innerHTML = '<i class="fas fa-heart" style="margin-right: 8px;"></i> Lưu địa điểm';
+            showToast('Đã bỏ lưu');
+          }
+        });
+
+        shareBtn.addEventListener('click', async () => {
+          const url = location.href;
+          const title = s.name;
+          const text = s.desc || s.name;
+          try {
+            if (navigator.share) {
+              await navigator.share({ title, text, url });
+              return;
+            }
+          } catch (_) { /* user cancelled */ }
+
+          if (navigator.clipboard && window.isSecureContext) {
+            try { await navigator.clipboard.writeText(url); showToast('Đã copy liên kết'); return; }
+            catch(_) { /* fallthrough */ }
+          }
+          window.prompt('Chia sẻ liên kết:', url);
+        });
+
+        dirBtn.href = gmaps(s.lat, s.lng);
+
+        // Comment form handling
+        commentForm.submit.addEventListener('click', () => {
+          const name = commentForm.name.value.trim();
+          const text = commentForm.text.value.trim();
+          const rating = commentForm.rating.find(r => r.checked)?.value;
+          const image = commentForm.image.files[0];
+
+          if (!name || !text || !rating) {
+            showToast('Vui lòng điền đầy đủ tên, đánh giá và bình luận');
+            return;
+          }
+
+          const reader = new FileReader();
+          const newReview = {
+            who: name,
+            text,
+            rating,
+            avatar: 'https://i.pravatar.cc/40?img=' + Math.floor(Math.random() * 70),
+            img: null
+          };
+
+          if (image) {
+            reader.onload = (e) => {
+              newReview.img = e.target.result;
+              saveAndRenderReview(newReview, s.id);
+            };
+            reader.readAsDataURL(image);
+          } else {
+            saveAndRenderReview(newReview, s.id);
+          }
+
+          commentForm.name.value = '';
+          commentForm.text.value = '';
+          commentForm.rating.forEach(r => r.checked = false);
+          commentForm.image.value = '';
+        });
+
+        commentForm.cancel.addEventListener('click', () => {
+          commentForm.name.value = '';
+          commentForm.text.value = '';
+          commentForm.rating.forEach(r => r.checked = false);
+          commentForm.image.value = '';
+          showToast('Đã hủy đánh giá');
+        });
+      }
+
+      function saveAndRenderReview(review, spotId) {
+        const key = `reviews_${spotId}`;
+        const reviews = JSON.parse(localStorage.getItem(key) || '[]');
+        reviews.push(review);
+        localStorage.setItem(key, JSON.stringify(reviews));
+        const allReviews = renderReviews([], spotId); // Re-render with updated reviews
+        updateAverageRating(allReviews);
+        showToast('Đánh giá đã được gửi');
+      }
+
+      function updateAverageRating(reviews) {
+        const avg = calculateAverageRating(reviews);
+        const ratingEl = $('#rating');
+        if (ratingEl) {
+          ratingEl.innerHTML = `
+            <div class="rating">
+              <span class="rating-stars">${renderStars(avg)}</span>
+              <span class="rating-value">${avg} (${reviews.length} đánh giá)</span>
+            </div>
+          `;
+        }
+      }
+
+      function setDocumentMeta(s) {
+        document.title = `${s.name} ${typeIcon(s.type)} · Chi tiết địa điểm`;
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.setAttribute('content', s.desc || s.address || 'Chi tiết địa điểm');
+
+        const ld = {
+          '@context': 'https://schema.org',
+          '@type': 'Place',
+          name: s.name,
+          description: s.desc || undefined,
+          geo: { '@type': 'GeoCoordinates', latitude: s.lat, longitude: s.lng },
+          address: s.address || undefined,
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: calculateAverageRating(s.reviews),
+            reviewCount: s.reviews?.length || 0
+          }
+        };
+        const el = document.createElement('script');
+        el.type = 'application/ld+json';
+        el.textContent = JSON.stringify(ld);
+        document.head.appendChild(el);
+      }
+
+      async function boot() {
+        hero.innerHTML = '';
+        hero.classList.add('skel');
+
+        let list = [];
+        try {
+          const res = await fetch('data/spots.json', { credentials: 'omit', cache: 'no-cache' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          list = await res.json();
+        } catch (err) {
+          app.innerHTML = `<div class="wrap"><p>Không tải được dữ liệu địa điểm. Vui lòng thử lại sau.</p></div>`;
+          console.error(err);
+          return;
+        }
+
+        const s = list.find(x => x.id === id) || list[0];
+        if (!s) {
+          app.innerHTML = `<div class="wrap"><p>Không tìm thấy địa điểm.</p></div>`;
+          return;
+        }
+
+        const first = (Array.isArray(s.media) && s.media[0]) || null;
+        renderHeroMedia(first);
+
+        titleEl.textContent = `${s.name} ${typeIcon(s.type)}`;
+        badgeEl.textContent = catLabel(s.category);
+
+        metaEl.innerHTML = `
+          <div><b>Địa chỉ:</b> ${esc(s.address || '')}</div>
+          <div><b>Giờ mở cửa:</b> ${esc(s.hours || 'Không rõ')}</div>
+          <div><b>Tọa độ:</b> ${Number(s.lat)}, ${Number(s.lng)}</div>
+          <div id="rating" class="rating"><span class="rating-stars">${renderStars(calculateAverageRating(s.reviews))}</span><span class="rating-value">${calculateAverageRating(s.reviews)} (${s.reviews?.length || 0} đánh giá)</span></div>
+        `;
+
+        descEl.textContent = s.desc || '';
+
+        hydrateActions(s);
+        buildGallery(s.media, s.thumb);
+        const allReviews = renderReviews(s.reviews, s.id);
+        updateAverageRating(allReviews);
+        setDocumentMeta(s);
+
+        const key = 'qn_saved';
+        try {
+          const saved = JSON.parse(localStorage.getItem(key) || '[]');
+          if (saved.includes(s.id)) {
+            saveBtn.innerHTML = '<i class="fas fa-heart" style="margin-right: 8px;"></i> Đã lưu ✓';
+            saveBtn.setAttribute('aria-pressed', 'true');
+          }
+        } catch(_) {}
+
+        app.dataset.state = 'ready';
+        app.removeAttribute('aria-busy');
+      }
+
+      boot();
+    })();
+  </script>
+</body>
+</html>
