@@ -2,11 +2,12 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Quảng Ninh Explorer</title>
+  <title>Quảng Ninh</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Khám phá các địa điểm du lịch, sản phẩm, và sự kiện tại Quảng Ninh với bản đồ tương tác." />
-  <meta name="keywords" content="Quảng Ninh, du lịch, sản phẩm, sự kiện, bản đồ" />
+  <meta name="keywords" content="Những sắc màu văn hóa" />
   <meta name="robots" content="index, follow" />
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -33,10 +34,12 @@
   <!-- Sidebar -->
   <aside id="sidebar">
     <header class="brand">
-      <div class="logo-chip">QN</div>
+      <div class="logo-container">
+        <img src="./images/logo.png" alt="Quảng Ninh Logo" class="logo-image" />
+      </div>
       <div>
-        <h1>Quảng Ninh Explorer</h1>
-        <p class="caption">Khám phá du lịch, dịch vụ, sự kiện</p>
+        <h1>Quảng Ninh</h1>
+        <p class="caption">Những sắc màu văn hóa</p>
       </div>
     </header>
 
@@ -106,5 +109,62 @@
 
   <!-- Script -->
   <script src="map.js?v=2" defer></script>
+
+  <style>
+    /* Logo styles */
+    .logo-container {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .logo-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 4px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.3em;
+      color: #1a365d;
+    }
+
+    .caption {
+      margin: 0;
+      font-size: 0.85em;
+      color: #718096;
+    }
+
+    /* Responsive logo */
+    @media (max-width: 768px) {
+      .logo-container {
+        width: 40px;
+        height: 40px;
+      }
+      
+      .brand h1 {
+        font-size: 1.1em;
+      }
+      
+      .caption {
+        font-size: 0.8em;
+      }
+    }
+  </style>
 </body>
 </html>
