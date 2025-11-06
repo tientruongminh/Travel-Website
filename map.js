@@ -1,50 +1,78 @@
-// map.js v5 — Colored icons + 54 units fill, no clustering, auto-scroll, better UX
-// đặt ở đầu file map.js
+// map.js - Youth & Dynamic Theme for Đoàn Thanh Niên
+// Modern colors: Blue + Teal + Vibrant gradients
+
+// Load Turf.js
 const turfScript = document.createElement('script');
 turfScript.src = "https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js";
 turfScript.onload = () => console.log("✅ Turf loaded");
 document.head.appendChild(turfScript);
 
-const CARTO_VOYAGER = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+// ====== COLOR PALETTE - YOUTH & DYNAMIC ======
+const COLORS = {
+  primary: "#0077C8",   // Đoàn blue
+  secondary: "#00BFA6", // Mint teal
+  sky: "#64B5F6",       // Sky blue
+  ocean: "#0288D1",     // Ocean
+  teal: "#00ACC1",      // Teal
+  leaf: "#81C784",      // Leaf green
+  lime: "#AED581",      // Lime
+  aqua: "#4DD0E1",      // Aqua
+  violet: "#9575CD",    // Soft violet
+  coral: "#FF8A65",     // Coral
+  yellow: "#FFD54F",    // Sunny yellow
+  pink: "#F06292",      // Pink
+  border: "#0f4a43"     // Dark teal border
+};
+
+// Unit palette - vibrant & youthful
+const UNIT_PALETTE = [
+  COLORS.secondary, COLORS.sky, COLORS.teal, COLORS.aqua,
+  COLORS.leaf, COLORS.lime, COLORS.ocean, COLORS.violet,
+  "#80DEEA", "#A5D6A7", "#90CAF9", "#CE93D8",
+  COLORS.yellow, COLORS.coral, COLORS.pink
+];
+
+// Map tiles - clean & bright
+const CARTO_TILES = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 const CARTO_ATTR = "&copy; OpenStreetMap &copy; CARTO";
 
-console.log("🟡 boot map…");
+console.log("🟢 Initializing Youth Dynamic Map...");
 const map = L.map("mapid", { zoomControl: true });
-L.tileLayer(CARTO_VOYAGER, { maxZoom: 22, attribution: CARTO_ATTR }).addTo(map);
+L.tileLayer(CARTO_TILES, { maxZoom: 22, attribution: CARTO_ATTR }).addTo(map);
 
-/* ---------------- Colored icons ---------------- */
-function makeIcon(bg, imageUrl) {
+// ====== CUSTOM CIRCLE ICONS ======
+function makeCircleIcon(imageUrl, size = 44) {
   return L.divIcon({
     html: `
       <div style="
-        width:36px;height:36px;border-radius:50%;
-        display:flex;align-items:center;justify-content:center;
-        background:${bg};
-        border:2px solid rgba(255,255,255,.95);
-        box-shadow:0 6px 14px rgba(0,0,0,.18);
-        transform: translateY(-6px);
-        overflow: hidden;
+        width:${size}px;
+        height:${size}px;
+        border-radius:50%;
+        overflow:hidden;
+        background:linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%);
+        box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(0,119,200,.3);
+        transition: transform .2s;
       ">
-        <img src="${imageUrl}" style="width:20px;height:20px;object-fit:contain;" />
+        <img src="${imageUrl}" style="width:100%;height:100%;object-fit:cover;display:block"/>
       </div>
     `,
-    className: "custom-div-icon",
-    iconSize: [36, 36],
-    iconAnchor: [18, 36],
-    popupAnchor: [0, -36]
+    className: "icon-circle",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size],
+    popupAnchor: [0, -Math.round(size * 0.55)]
   });
 }
 
 const customIcons = {
-  tour:    makeIcon("#22c55e", "./images/icons/tour.png"),
-  service: makeIcon("#f59e0b", "./images/icons/service.png"),
-  event:   makeIcon("#ef4444", "./images/icons/event.png"),
-  eat:     makeIcon("#8b5cf6", "./images/icons/eat.png"),
-  stay:    makeIcon("#06b6d4", "./images/icons/stay.png"),
-  play:    makeIcon("#3b82f6", "./images/icons/play.png")
+  tour: makeCircleIcon("./images/icons/tour.png", 44),
+  service: makeCircleIcon("./images/icons/service.png", 44),
+  event: makeCircleIcon("./images/icons/event.png", 44),
+  eat: makeCircleIcon("./images/icons/eat.png", 44),
+  stay: makeCircleIcon("./images/icons/stay.png", 44),
+  play: makeCircleIcon("./images/icons/play.png", 44)
 };
 
-/* ---------------- State ---------------- */
+// ====== STATE ======
 let qnBounds = null;
 let allPoints = [];
 let current = [];
@@ -53,7 +81,7 @@ let markers = [];
 const markersLayer = L.layerGroup();
 map.addLayer(markersLayer);
 
-/* ---------------- UI refs ---------------- */
+// ====== UI REFS ======
 const els = {
   cards: document.getElementById("cards"),
   spotList: document.getElementById("spot-list"),
@@ -63,7 +91,6 @@ const els = {
   statEvt: document.getElementById("stat-evt"),
   keyword: document.getElementById("keyword"),
   sidebarToggle: document.getElementById("sidebarToggle"),
-  cardsToggle: document.getElementById("cardsToggle"),
   sidebar: document.getElementById("sidebar")
 };
 
@@ -71,29 +98,53 @@ let autoScrollInterval = null;
 
 init();
 
+// ====== INIT ======
 async function init() {
   try {
     const boundaryP = fetch("data/quangninh.geojson?v=3").then(r => r.json());
-    const spotsP    = fetch("data/spots.json?v=3").then(r => r.json());
-    const unitsP    = fetch("data/quang_ninh_54units.geojson?v=1").then(r => r.json()).catch(() => null);
+    const spotsP = fetch("data/spots.json?v=3").then(r => r.json());
+    const unitsP = fetch("data/quang_ninh_54units.geojson?v=1").then(r => r.json()).catch(() => null);
 
     let geo, spots, units;
-    try { geo = await boundaryP; console.log("✅ boundary loaded"); }
-    catch { console.warn("⚠️ boundary fetch failed → demo polygon"); geo = demoBoundaryGeoJSON(); }
-
-    try { spots = await spotsP; console.log("✅ spots loaded:", spots?.length ?? 0); }
-    catch { console.warn("⚠️ spots fetch failed → demo spots"); spots = demoSpots(); }
-
-    try { units = await unitsP; console.log("✅ units loaded:", units?.features?.length ?? 0); }
-    catch { units = null; }
     
-    // Boundary layer
+    try {
+      geo = await boundaryP;
+      console.log("✅ Boundary loaded");
+    } catch {
+      console.warn("⚠️ Boundary fetch failed → demo polygon");
+      geo = demoBoundaryGeoJSON();
+    }
+
+    try {
+      spots = await spotsP;
+      console.log("✅ Spots loaded:", spots?.length ?? 0);
+    } catch {
+      console.warn("⚠️ Spots fetch failed → demo spots");
+      spots = demoSpots();
+    }
+
+    try {
+      units = await unitsP;
+      console.log("✅ Units loaded:", units?.features?.length ?? 0);
+    } catch {
+      units = null;
+    }
+
+    // ====== BOUNDARY LAYER - Youth Style ======
+    const boundaryStyle = {
+      color: COLORS.primary,
+      weight: 3,
+      fillColor: "#E3F2FD",
+      fillOpacity: 0.15,
+      dashArray: "5, 5"
+    };
+
     const boundaryLayer = L.geoJSON(geo, {
-      filter: f => f.geometry?.type === "Polygon" || f.geometry?.type === "MultiPolygon",
-      style: { color: "#1b6a63", weight: 2, fillColor: "#aee0d9", fillOpacity: .15 }
+      filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
+      style: boundaryStyle
     }).addTo(map);
 
-    // Fit and lock inside Quảng Ninh
+    // Fit bounds
     qnBounds = boundaryLayer.getBounds();
     map.fitBounds(qnBounds);
 
@@ -102,6 +153,7 @@ async function init() {
     map.setMaxZoom(fitZoom + 10);
     map.setMaxBounds(qnBounds.pad(0.02));
     map.options.maxBoundsViscosity = 1.0;
+    
     map.on("drag", () => map.panInsideBounds(qnBounds, { animate: true }));
     map.on("zoomend", () => {
       const z = map.getZoom();
@@ -109,61 +161,90 @@ async function init() {
       if (z > map.getMaxZoom()) map.setZoom(map.getMaxZoom());
     });
 
-    /* ====== 54 đơn vị: tô màu khác nhau theo tên ====== */
-    function hashColor(str) {
+    // ====== 54 UNITS LAYER - Vibrant Colors ======
+    function unitFillByName(name = "unit") {
       let h = 0;
-      for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
-      const hue = h % 360;
-      return `hsl(${hue}, 70%, 68%)`;
+      for (let i = 0; i < name.length; i++) {
+        h = (h * 31 + name.charCodeAt(i)) >>> 0;
+      }
+      return UNIT_PALETTE[h % UNIT_PALETTE.length];
     }
 
     let unitsLayer = null;
     if (units && units.type === "FeatureCollection") {
       unitsLayer = L.geoJSON(units, {
-        filter: f => ["Polygon","MultiPolygon"].includes(f.geometry?.type),
+        filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
         style: f => {
           const name = f.properties?.unit_54_name || "unit";
           return {
-            color: "#0f4a43",
-            weight: 1,
-            fillColor: hashColor(name),
-            fillOpacity: 0.55
+            color: COLORS.border,
+            weight: 1.5,
+            fillColor: unitFillByName(name),
+            fillOpacity: 0.5,
+            className: 'unit-polygon'
           };
         },
         onEachFeature: (feature, layer) => {
           const name = feature.properties?.unit_54_name || "Chưa rõ";
           const type = feature.properties?.unit_54_type || "";
-          layer.bindTooltip(`${name}${type ? " • " + type : ""}`, {
+          
+          layer.bindTooltip(`
+            <div class="unit-tooltip">
+              <div class="unit-name">${name}</div>
+              ${type ? `<div class="unit-type">${type}</div>` : ''}
+            </div>
+          `, {
             direction: "center",
             permanent: false,
             sticky: true,
             className: "unit-label"
           });
-          layer.on("mouseover", () => layer.setStyle({ weight: 2, fillOpacity: 0.7 }));
-          layer.on("mouseout",  () => layer.setStyle({ weight: 1, fillOpacity: 0.55 }));
-          layer.on("click",     () => map.fitBounds(layer.getBounds().pad(0.05), { animate: true }));
+          
+          layer.on("mouseover", () => {
+            layer.setStyle({ 
+              weight: 3, 
+              fillOpacity: 0.7,
+              color: COLORS.primary
+            });
+          });
+          
+          layer.on("mouseout", () => {
+            layer.setStyle({ 
+              weight: 1.5, 
+              fillOpacity: 0.5,
+              color: COLORS.border
+            });
+          });
+          
+          layer.on("click", () => {
+            map.fitBounds(layer.getBounds().pad(0.05), { 
+              animate: true,
+              duration: 0.8
+            });
+          });
         }
       }).addTo(map);
+      
       unitsLayer.bringToFront();
     }
 
-    // Normalize points
+    // Normalize and render
     const userPoints = JSON.parse(localStorage.getItem("qn_user_points") || "[]");
     allPoints = normalizeSpots(spots).concat(normalizeSpots(userPoints));
     current = allPoints.slice();
 
-    console.log("✅ map ready. points:", current.length);
+    console.log("✅ Map ready. Points:", current.length);
     render(current);
     wireUI();
     startAutoScroll();
+    
   } catch (err) {
-    console.error("❌ init failed:", err);
+    console.error("❌ Init failed:", err);
   }
 }
 
-/* ---------------- Render ---------------- */
+// ====== RENDER ======
 function render(points) {
-  // Clear markers
   markersLayer.clearLayers();
   markers = [];
 
@@ -189,8 +270,7 @@ function render(points) {
         <img src="${esc(p.thumb || 'images/placeholder.jpg')}" alt="${esc(p.name)}">
         <div class="spot-info">
           <h4>${esc(p.name)}</h4>
-          <div class="spot-meta">
-            <span class="material-icons">${getCategoryIcon(p.category)}</span>
+          <div class="spot-meta" data-cat="${esc(p.category)}">
             ${catLabel(p.category)}
           </div>
           <p>${esc((p.desc || '').slice(0, 60))}${(p.desc || '').length > 60 ? '...' : ''}</p>
@@ -203,7 +283,7 @@ function render(points) {
         const id = card.dataset.id;
         const spot = points.find(p => p.id === id);
         if (spot) {
-          map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: .8 });
+          map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: 0.8 });
           const mk = markers.find(m => m._meta?.id === id);
           if (mk) mk.openPopup();
         }
@@ -211,14 +291,15 @@ function render(points) {
     });
   }
 
-  // Bottom rail cards
+  // Bottom cards
   if (els.cards) {
-    els.cards.innerHTML = points.map(p => `
+    const handleHTML = `<button class="sheet-handle" aria-label="Thu gọn/mở rộng"><div class="grabber"></div></button>`;
+    
+    els.cards.innerHTML = handleHTML + points.map(p => `
       <div class="card-mini" data-id="${esc(p.id)}">
         <div class="card">
           <img class="thumb" src="${esc(p.thumb || 'images/placeholder.jpg')}" alt="">
           <div>
-            <div class="card-icon">${getTypeIcon(p.type)}</div>
             <h4>${esc(p.name)}</h4>
             <div class="meta">
               <span class="material-icons">${getCategoryIcon(p.category)}</span> 
@@ -236,7 +317,7 @@ function render(points) {
         const spot = points.find(p => p.id === id);
         if (spot) {
           stopAutoScroll();
-          map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: .8 });
+          map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: 0.8 });
           const mk = markers.find(m => m._meta?.id === id);
           if (mk) mk.openPopup();
         }
@@ -250,16 +331,16 @@ function render(points) {
 function updateStats(points) {
   const total = points.length;
   const tour = points.filter(p => catIs(p, "tour")).length;
-  const svc  = points.filter(p => catIs(p, "service")).length;
-  const evt  = points.filter(p => catIs(p, "event")).length;
+  const svc = points.filter(p => catIs(p, "service")).length;
+  const evt = points.filter(p => catIs(p, "event")).length;
 
   setText(els.statAll, total);
   setText(els.statTour, tour);
-  setText(els.statSvc,  svc);
-  setText(els.statEvt,  evt);
+  setText(els.statSvc, svc);
+  setText(els.statEvt, evt);
 }
 
-/* ---------------- Auto Scroll ---------------- */
+// ====== AUTO SCROLL ======
 function startAutoScroll() {
   if (autoScrollInterval) return;
 
@@ -287,8 +368,20 @@ if (els.cards) {
   els.cards.addEventListener('mouseleave', startAutoScroll);
 }
 
-/* ---------------- UI Wiring ---------------- */
+// ====== UI WIRING ======
 function wireUI() {
+  // Stats collapsible toggle
+  const statsEl = document.querySelector('.stats');
+  const statsHeader = document.querySelector('.stats-header');
+  
+  if (statsHeader) {
+    statsHeader.addEventListener('click', () => {
+      statsEl?.classList.toggle('expanded');
+    });
+    // Auto expand on first load
+    setTimeout(() => statsEl?.classList.add('expanded'), 300);
+  }
+
   // Search
   els.keyword?.addEventListener("input", () => {
     const kw = els.keyword.value.trim().toLowerCase();
@@ -307,12 +400,14 @@ function wireUI() {
   // Sidebar toggle
   els.sidebarToggle?.addEventListener("click", () => {
     document.body.classList.toggle("sidebar-collapsed");
+    els.sidebar?.classList.toggle("collapsed");
   });
 
   // Bottom nav
   document.getElementById("open-explore")?.addEventListener("click", () => {
     location.href = "explore.html";
   });
+  
   document.getElementById("open-profile")?.addEventListener("click", () => {
     location.href = "profile.html";
   });
@@ -333,47 +428,16 @@ function wireUI() {
     });
   });
 
-  // Sidebar button icon sync
-  const btn = els.sidebarToggle;
-  const syncToggle = () => {
-    const isClosed = els.sidebar?.classList?.contains('collapsed');
-    if (!btn) return;
-    btn.innerHTML = `<span class="material-icons">${isClosed ? 'chevron_left' : 'menu'}</span>`;
-    btn.setAttribute('aria-label', isClosed ? 'Mở sidebar' : 'Đóng sidebar');
-  };
-  btn?.addEventListener('click', () => {
-    els.sidebar?.classList?.toggle('collapsed');
-    syncToggle();
-  });
+  // Escape key
   window.addEventListener('keydown', e => {
     if (e.key === 'Escape' && els.sidebar && !els.sidebar.classList.contains('collapsed')) {
       els.sidebar.classList.add('collapsed');
-      syncToggle();
+      document.body.classList.add('sidebar-collapsed');
     }
-  });
-  syncToggle();
-
-  // Cards rail toggle
-  els.cardsToggle?.addEventListener('click', () => {
-    els.cards.classList.toggle('collapsed');
-    els.cardsToggle.classList.toggle('active');
-  });
-
-  // Tabs
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const tabName = tab.dataset.tab;
-      if (tabName === 'explore') window.location.href = 'explore.html';
-      else if (tabName === 'upload') window.location.href = 'upload.html';
-      else if (tabName === 'map') {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-      }
-    });
   });
 }
 
-/* ---------------- Popup Builder ---------------- */
+// ====== POPUP BUILDER ======
 function buildPopupHTML(p) {
   const hasCarousel = (p.media?.length || 0) > 1;
   const first = p.media?.[0];
@@ -387,7 +451,7 @@ function buildPopupHTML(p) {
         </div>
       </div>`
     : (first ? renderMedia(first)
-             : `<img src="${esc(p.thumb || 'images/placeholder.jpg')}" class="popup-media" alt="${esc(p.name)}">`);
+      : `<img src="${esc(p.thumb || 'images/placeholder.jpg')}" class="popup-media" alt="${esc(p.name)}">`);
 
   const badgeClass = typeBadgeClass(p.type);
   const gmaps = googleMapsLink(p.lat, p.lng);
@@ -403,7 +467,7 @@ function buildPopupHTML(p) {
       <span class="${badgeClass}">${catLabel(p.category)}</span>
       <p class="popup-desc">${esc(p.desc || '')}</p>
       ${p.address ? `<div style="font-size:12px;color:#475569;display:flex;gap:6px;align-items:center;margin:6px 0 10px">
-        <span class="material-icons" style="font-size:16px;color:#1f8175">place</span>
+        <span class="material-icons" style="font-size:16px;color:${COLORS.primary}">place</span>
         <span>${esc(p.address)}</span>
       </div>` : ''}
       ${p.hours ? `<div style="font-size:12px;color:#64748b;margin:-6px 0 10px">${esc(p.hours)}</div>` : ''}
@@ -474,35 +538,45 @@ function attachPopupEvents(p) {
   }
 }
 
-/* ---------------- Icon Helpers ---------------- */
+// ====== HELPERS ======
 function getCategoryIcon(cat) {
-  const icons = { tour: 'landscape', service: 'restaurant', event: 'event', svc: 'restaurant', evt: 'event' };
+  const icons = { 
+    tour: 'landscape', 
+    service: 'shopping_bag', 
+    event: 'event',
+    svc: 'shopping_bag',
+    evt: 'event' 
+  };
   return icons[cat] || 'place';
 }
+
 function getTypeIcon(type) {
   const icons = { eat: '🍽️', play: '🎡', stay: '🏨' };
   return icons[type] || '📍';
 }
 
-/* ---------------- Helpers ---------------- */
 const ICON_SVG = {
   eat: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11 2h2v20h-2V2zm7.5 7c1.93 0 3.5 1.57 3.5 3.5S20.43 16 18.5 16H17v6h-2V9h3.5zM9 7v6c0 2.21-1.79 4-4 4H4v5H2V3h2v6h1c1.66 0 3-1.34 3-3V3h2v4z"/></svg>',
-  play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7L8 5z"/></svg>',
-  stay:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 7V4H5v3H2v13h2v-2h16v2h2V7h-3zM5 18v-5h14v5H5zm0-7V6h14v5H5z"/></svg>'
+  play: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7L8 5z"/></svg>',
+  stay: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 7V4H5v3H2v13h2v-2h16v2h2V7h-3zM5 18v-5h14v5H5zm0-7V6h14v5H5z"/></svg>'
 };
 
 function typeIconHTML(type) {
   const t = (type || '').toLowerCase();
   const svg = ICON_SVG[t] || ICON_SVG.play;
-  return `<span style="display:inline-flex;align-items:center;gap:6px;color:#1f8175">${svg}</span>`;
+  return `<span style="display:inline-flex;align-items:center;gap:6px;color:${COLORS.primary}">${svg}</span>`;
 }
+
 function typeBadgeClass(type) {
   const t = (type || '').toLowerCase();
   if (t === 'eat') return 'popup-badge badge-eat';
   if (t === 'stay') return 'popup-badge badge-stay';
   return 'popup-badge badge-play';
 }
-function googleMapsLink(lat, lng) { return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`; }
+
+function googleMapsLink(lat, lng) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+}
 
 function normalizeSpots(arr = []) {
   return arr.map(s => ({
@@ -523,38 +597,83 @@ function normalizeSpots(arr = []) {
   }));
 }
 
-function filterByMode(list, mode) { if (mode === "all") return list; return list.filter(p => catIs(p, mode)); }
+function filterByMode(list, mode) {
+  if (mode === "all") return list;
+  return list.filter(p => catIs(p, mode));
+}
 
 function catIs(p, m) {
   const c = (p.category || "").toLowerCase();
   if (m === "service" || m === "svc") return c === "service" || c === "svc";
-  if (m === "event"   || m === "evt") return c === "event"   || c === "evt";
+  if (m === "event" || m === "evt") return c === "event" || c === "evt";
   if (m === "tour") return c === "tour";
   return false;
 }
 
-function catLabel(t, cap = false) {
-  const m = { tour: "Du lịch", service: "Sản phẩm", event: "Sự kiện", evt: "Sự kiện", svc: "Sản phẩm" };
-  return m[t] || (cap ? "Khác" : "khác");
+function catLabel(t) {
+  const m = {
+    tour: "Du lịch",
+    service: "Sản phẩm",
+    event: "Sự kiện",
+    evt: "Sự kiện",
+    svc: "Sản phẩm"
+  };
+  return m[t] || "Khác";
 }
 
-function rid() { return Math.random().toString(36).slice(2, 10); }
-function esc(s) { return (s || "").toString().replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }
-function setText(el, v) { if (el) el.textContent = v; }
+function rid() {
+  return Math.random().toString(36).slice(2, 10);
+}
 
-/* ---------------- Demo fallbacks ---------------- */
+function esc(s) {
+  return (s || "").toString().replace(/[&<>"']/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[m]));
+}
+
+function setText(el, v) {
+  if (el) el.textContent = v;
+}
+
+// ====== DEMO FALLBACKS ======
 function demoBoundaryGeoJSON() {
   return {
     type: "FeatureCollection",
     features: [{
       type: "Feature",
-      geometry: { type: "Polygon", coordinates: [[[107.0, 20.8],[107.5,20.8],[107.5,21.3],[107.0,21.3],[107.0,20.8]]] }
+      geometry: {
+        type: "Polygon",
+        coordinates: [[[107.0, 20.8], [107.5, 20.8], [107.5, 21.3], [107.0, 21.3], [107.0, 20.8]]]
+      }
     }]
   };
 }
+
 function demoSpots() {
   return [
-    { id: 'demo1', name: 'Vịnh Hạ Long', category: 'tour', type: 'play', lat: 20.9101, lng: 107.1839, desc: 'Di sản thiên nhiên thế giới', thumb: 'https://picsum.photos/400/300?random=1' },
-    { id: 'demo2', name: 'Chợ đêm Hạ Long', category: 'service', type: 'eat', lat: 20.9508, lng: 107.0784, desc: 'Ẩm thực địa phương', thumb: 'https://picsum.photos/400/300?random=2' }
+    {
+      id: 'demo1',
+      name: 'Vịnh Hạ Long',
+      category: 'tour',
+      type: 'play',
+      lat: 20.9101,
+      lng: 107.1839,
+      desc: 'Di sản thiên nhiên thế giới',
+      thumb: 'https://picsum.photos/400/300?random=1'
+    },
+    {
+      id: 'demo2',
+      name: 'Chợ đêm Hạ Long',
+      category: 'service',
+      type: 'eat',
+      lat: 20.9508,
+      lng: 107.0784,
+      desc: 'Ẩm thực địa phương',
+      thumb: 'https://picsum.photos/400/300?random=2'
+    }
   ];
 }

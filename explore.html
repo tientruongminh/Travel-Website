@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <style>
+    /* ===== Variables ===== */
     :root {
       --bg: #f6f8fb;
       --card: #ffffff;
@@ -18,35 +19,51 @@
       --radius: 16px;
     }
 
+    /* ===== Reset ===== */
     * { 
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
+    /* ===== Base - Full gradient background ===== */
     html, body {
       height: 100%;
-      background: var(--bg);
+      min-height: 100vh;
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Helvetica Neue", Arial, sans-serif;
       line-height: 1.5;
     }
 
-    /* Layout */
+    body {
+      /* Gradient loang đầy trang */
+      background:
+        radial-gradient(600px 400px at 0% 0%, rgba(255, 216, 107, 0.55), transparent 60%),
+        radial-gradient(700px 500px at 50% 35%, rgba(137, 240, 207, 0.45), transparent 65%),
+        radial-gradient(900px 600px at 100% 100%, rgba(31, 129, 117, 0.30), transparent 65%),
+        linear-gradient(135deg, #f7fffd 0%, #eefaf7 100%);
+      background-repeat: no-repeat;
+      background-attachment: fixed; /* Gradient fixed, không bị scroll */
+    }
+
+    /* ===== Layout ===== */
     .wrap {
       max-width: 1080px;
       margin: 0 auto;
       padding: 20px 16px 40px;
       min-height: 100vh;
+      background: transparent; /* Trong suốt để thấy gradient body */
     }
 
+    /* ===== Sticky Topbar ===== */
     .topbar {
       position: sticky;
       top: 0;
       z-index: 10;
-      background: linear-gradient(180deg, #f6f8fbe6, #f6f8fb00);
-      backdrop-filter: saturate(1.2) blur(4px);
+      background: transparent; /* Trong suốt, chỉ dùng backdrop blur */
+      backdrop-filter: saturate(1.2) blur(8px);
       padding-top: 8px;
+      margin-bottom: 8px;
     }
 
     .toprow {
@@ -77,7 +94,7 @@
       font-size: 20px;
     }
 
-    /* Search */
+    /* ===== Search ===== */
     .search {
       flex: 1;
       display: flex;
@@ -86,14 +103,16 @@
       border: 1px solid var(--line);
       border-radius: 14px;
       padding: 12px 16px;
-      background: #fff;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
       box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
-      transition: box-shadow 0.2s ease;
+      transition: all 0.2s ease;
     }
 
     .search:focus-within {
       box-shadow: 0 0 0 3px rgba(14, 165, 163, 0.1);
       border-color: var(--brand);
+      background: #fff;
     }
 
     .search input {
@@ -104,7 +123,7 @@
       background: transparent;
     }
 
-    /* Filters */
+    /* ===== Filters ===== */
     .filters {
       display: flex;
       gap: 8px;
@@ -117,7 +136,8 @@
       gap: 6px;
       align-items: center;
       border: 1px solid var(--line);
-      background: #fff;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
       border-radius: 999px;
       padding: 10px 16px;
       font-size: 14px;
@@ -129,6 +149,7 @@
     .pill:hover {
       transform: translateY(-1px);
       box-shadow: 0 4px 14px rgba(2, 8, 23, 0.08);
+      background: #fff;
     }
 
     .pill.active {
@@ -141,14 +162,14 @@
     .pill .dot {
       width: 8px;
       height: 8px;
-      border-radius: 99px;
+      border-radius: 50%;
     }
 
     .dot-tour { background: #0ea5a3; }
     .dot-svc { background: #8b5cf6; }
     .dot-evt { background: #ef4444; }
 
-    /* Meta bar */
+    /* ===== Meta Bar ===== */
     .metabar {
       display: flex;
       gap: 12px;
@@ -177,12 +198,13 @@
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: 6px 10px;
-      background: #fff;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
       font-size: 14px;
       cursor: pointer;
     }
 
-    /* List */
+    /* ===== List Grid ===== */
     .list {
       margin-top: 20px;
       display: grid;
@@ -195,7 +217,8 @@
       gap: 16px;
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      background: var(--card);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
       padding: 16px;
       box-shadow: 0 2px 10px rgba(2, 8, 23, 0.04);
       transition: all 0.3s ease;
@@ -203,7 +226,8 @@
 
     .item:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(2, 8, 23, 0.08);
+      box-shadow: 0 10px 28px rgba(2, 8, 23, 0.12);
+      background: #fff;
     }
 
     .item img {
@@ -256,6 +280,7 @@
       line-height: 1.5;
     }
 
+    /* ===== Actions ===== */
     .actions {
       display: flex;
       gap: 8px;
@@ -294,7 +319,7 @@
       font-size: 18px;
     }
 
-    /* Pagination */
+    /* ===== Pagination ===== */
     .pager {
       display: flex;
       gap: 8px;
@@ -309,7 +334,8 @@
       min-height: 36px;
       padding: 6px 12px;
       border: 1px solid var(--line);
-      background: #fff;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
       border-radius: 10px;
       cursor: pointer;
       font-weight: 600;
@@ -318,7 +344,8 @@
     }
 
     .pagebtn:hover:not([disabled]) {
-      background: #f8fafc;
+      background: #fff;
+      transform: translateY(-1px);
     }
 
     .pagebtn[disabled] {
@@ -332,7 +359,7 @@
       color: #fff;
     }
 
-    /* Empty & skeleton */
+    /* ===== Empty State ===== */
     .empty {
       margin: 40px auto;
       padding: 40px 20px;
@@ -340,7 +367,8 @@
       border-radius: 14px;
       text-align: center;
       color: #475569;
-      background: #fff;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
       max-width: 400px;
     }
 
@@ -350,16 +378,17 @@
       margin-bottom: 16px;
     }
 
+    /* ===== Skeleton Loading ===== */
     .skeleton {
       display: grid;
       grid-template-columns: 160px 1fr;
       gap: 16px;
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      background: #fff;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
       padding: 16px;
       overflow: hidden;
-      position: relative;
     }
 
     .shimmer {
@@ -384,7 +413,7 @@
       100% { background-position: -200% 0; }
     }
 
-    /* Toast */
+    /* ===== Toast ===== */
     .toast {
       position: fixed;
       left: 50%;
@@ -413,7 +442,7 @@
       font-size: 18px;
     }
 
-    /* Responsive */
+    /* ===== Responsive ===== */
     @media (max-width: 768px) {
       .item {
         grid-template-columns: 1fr;
@@ -528,7 +557,7 @@
   </div>
 
   <script>
-    // Utilities
+    // ===== Utilities =====
     const esc = s => (s||'').toString().replace(/[&<>"']/g, m => ({ 
       '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' 
     }[m]));
@@ -541,26 +570,25 @@
       svc: 'Sản phẩm'
     })[t] || 'Khác';
 
-    // Map id -> media list
+    // Media map for fallback images
     window.spotMediaMap = {};
 
-    // Fallback image SVG
-    const FALLBACK_IMG =
-      'data:image/svg+xml;utf8,' +
-      encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800">
-  <rect width="100%" height="100%" fill="#f1f5f9"/>
-  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle"
-        font-family="system-ui,-apple-system,Segoe UI,Roboto" font-size="28" fill="#94a3b8">
-    Không có ảnh
-  </text>
-</svg>`);
+    // Fallback SVG
+    const FALLBACK_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800">
+        <rect width="100%" height="100%" fill="#f1f5f9"/>
+        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle"
+              font-family="system-ui,-apple-system,Segoe UI,Roboto" font-size="28" fill="#94a3b8">
+          Không có ảnh
+        </text>
+      </svg>
+    `);
 
-    // Khi ảnh thumb lỗi, thử lấy ảnh đầu tiên trong media. Nếu cũng không có, dùng placeholder SVG nhúng sẵn
+    // Handle image errors
     function imgOnError(imgEl, id) {
       try {
         const list = window.spotMediaMap?.[id] || [];
-        const altImg = list.find(x => x && x.type === "image" && x.url)?.url;
+        const altImg = list.find(x => x?.type === "image" && x.url)?.url;
         if (altImg && imgEl.dataset.fallback !== "true") {
           imgEl.dataset.fallback = "true";
           imgEl.src = altImg;
@@ -569,16 +597,15 @@
       } catch (e) {
         console.warn("imgOnError", e);
       }
-      // Cuối cùng rơi về placeholder nhúng sẵn, không cần file
       imgEl.src = FALLBACK_IMG;
       imgEl.alt = "Ảnh không khả dụng";
     }
 
-    // State
+    // ===== State =====
     let all = [], filtered = [], mode = 'all';
     let page = 1, pageSize = 9;
 
-    // Initialize
+    // ===== Initialize =====
     init();
 
     async function init() {
@@ -588,7 +615,6 @@
         const user = JSON.parse(localStorage.getItem('qn_user_points') || '[]');
         all = normalize(base).concat(normalize(user));
 
-        // Lưu lại media theo id để dùng khi ảnh thumb lỗi
         window.spotMediaMap = Object.fromEntries(
           all.map(p => [p.id, Array.isArray(p.media) ? p.media : []])
         );
@@ -601,12 +627,12 @@
       }
     }
 
+    // ===== Normalize Data =====
     function normalize(arr = []) {
       return arr.map(s => {
-        const firstMediaImg =
-          Array.isArray(s.media) && s.media.length > 0
-            ? (s.media.find(m => m.type === "image")?.url || "")
-            : "";
+        const firstMediaImg = Array.isArray(s.media) && s.media.length > 0
+          ? (s.media.find(m => m.type === "image")?.url || "")
+          : "";
 
         return {
           id: s.id || Math.random().toString(36).slice(2, 10),
@@ -622,14 +648,14 @@
       });
     }
 
-    // Filtering + Search
+    // ===== Filter & Search =====
     function apply() {
       const kw = document.getElementById('q').value?.trim().toLowerCase() || '';
       filtered = all.filter(p => {
-        const okCat = mode === 'all' ? true :
-          (mode === 'tour' ? p.category === 'tour' :
-           mode === 'service' ? (p.category === 'service' || p.category === 'svc') :
-           mode === 'event' ? (p.category === 'event' || p.category === 'evt') : true);
+        const okCat = mode === 'all' ||
+          (mode === 'tour' && p.category === 'tour') ||
+          (mode === 'service' && (p.category === 'service' || p.category === 'svc')) ||
+          (mode === 'event' && (p.category === 'event' || p.category === 'evt'));
         
         const okKw = !kw ||
           p.name.toLowerCase().includes(kw) ||
@@ -642,7 +668,7 @@
       render();
     }
 
-    // Render list + pagination
+    // ===== Render List =====
     function render() {
       const total = filtered.length;
       const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -707,6 +733,7 @@
       renderPagination(totalPages);
     }
 
+    // ===== Pagination =====
     function renderPagination(totalPages) {
       const el = document.getElementById('pager');
       const maxShown = 7;
@@ -727,16 +754,15 @@
       const btn = (label, p, disabled = false, active = false) =>
         `<button class="pagebtn ${active ? 'active' : ''}" ${disabled ? 'disabled' : ''} data-page="${p}">${label}</button>`;
 
-      let html = '';
-      html += btn('<span class="material-icons">chevron_left</span>', page - 1, page === 1, false);
+      let html = btn('<span class="material-icons">chevron_left</span>', page - 1, page === 1);
       pages.forEach(n => {
-        if (n === '…') html += `<span style="padding:6px 4px;color:#94a3b8">…</span>`;
-        else html += btn(n, n, false, n === page);
+        html += n === '…' 
+          ? `<span style="padding:6px 4px;color:#94a3b8">…</span>`
+          : btn(n, n, false, n === page);
       });
-      html += btn('<span class="material-icons">chevron_right</span>', page + 1, page === totalPages, false);
+      html += btn('<span class="material-icons">chevron_right</span>', page + 1, page === totalPages);
       el.innerHTML = html;
 
-      // Add event listeners
       [...el.querySelectorAll('.pagebtn')].forEach(b => {
         b.onclick = () => {
           const p = +b.getAttribute('data-page');
@@ -749,7 +775,7 @@
       });
     }
 
-    // Save favorite with toast
+    // ===== Save Favorite =====
     function saveFav(id) {
       const key = 'qn_saved';
       const a = JSON.parse(localStorage.getItem(key) || '[]');
@@ -766,6 +792,7 @@
       setTimeout(() => t.classList.remove('show'), 1400);
     }
 
+    // ===== Error & Loading States =====
     function showError() {
       document.getElementById('list').innerHTML = `
         <div class="empty">
@@ -777,8 +804,7 @@
     }
 
     function showSkeleton() {
-      const box = document.getElementById('list');
-      const sk = () => `
+      const sk = `
         <div class="skeleton">
           <div class="shimmer sk-img"></div>
           <div>
@@ -789,12 +815,11 @@
             <div class="shimmer sk-line" style="width:80%;height:36px;margin-top:12px"></div>
           </div>
         </div>`;
-      box.innerHTML = sk() + sk() + sk() + sk() + sk();
+      document.getElementById('list').innerHTML = sk.repeat(5);
       document.getElementById('pager').innerHTML = '';
-      document.getElementById('resultCount').textContent = 'Đang tải…';
     }
 
-    // Event listeners
+    // ===== Event Listeners =====
     let tSearch;
     document.getElementById('q').addEventListener('input', () => {
       clearTimeout(tSearch);
@@ -822,27 +847,12 @@
     });
 
     const sizeSel = document.getElementById('pageSize');
-    pageSize = +sizeSel.value || 9;
     sizeSel.onchange = () => {
       pageSize = +sizeSel.value || 9;
       page = 1;
       render();
     };
 
-    // Keyboard navigation
-    window.addEventListener('keydown', e => {
-      const totalPages = Math.max(1, Math.ceil((filtered?.length || 0) / pageSize));
-      if (e.key === 'ArrowLeft' && page > 1) {
-        page--;
-        render();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-      if (e.key === 'ArrowRight' && page < totalPages) {
-        page++;
-        render();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    });
   </script>
 </body>
 </html>

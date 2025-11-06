@@ -2,13 +2,12 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Quảng Ninh</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quảng Ninh - Những sắc màu văn hóa</title>
   <meta name="description" content="Khám phá các địa điểm du lịch, sản phẩm, và sự kiện tại Quảng Ninh với bản đồ tương tác." />
-  <meta name="keywords" content="Những sắc màu văn hóa" />
+  <meta name="keywords" content="Quảng Ninh, du lịch, văn hóa, bản đồ" />
   <meta name="robots" content="index, follow" />
-  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-
+  
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -18,153 +17,138 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
-  <!-- Icons -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Turf.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
-  <!-- App style -->
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <!-- App Styles -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- FAB toggle sidebar -->
+  <!-- FAB Toggle Button -->
   <button id="sidebarToggle" class="fab fab-right" aria-label="Mở/đóng menu">
     <span class="burger-white"></span>
   </button>
 
   <!-- Sidebar -->
   <aside id="sidebar">
-    <header class="brand">
-      <div class="logo-container">
-        <img src="./images/logo.png" alt="Quảng Ninh Logo" class="logo-image" />
+    <!-- Header -->
+    <div class="sb-head">
+      <div class="sb-logo">
+        <img src="./images/logo.png" alt="Quảng Ninh Logo" />
       </div>
-      <div>
+      <div class="sb-title">
         <h1>Quảng Ninh</h1>
-        <p class="caption">Những sắc màu văn hóa</p>
+        <p>Những sắc màu văn hóa</p>
       </div>
-    </header>
+    </div>
 
-    <div class="search-box">
+    <!-- Search Box -->
+    <div class="sb-search">
       <span class="material-icons">search</span>
-      <input id="keyword" placeholder="Tìm theo tên địa điểm…" autocomplete="off" />
+      <input id="keyword" type="search" placeholder="Tìm theo tên địa điểm..." autocomplete="off" />
     </div>
 
-    <div class="pills">
-      <button class="pill active" data-cat="all">Tất cả</button>
-      <button class="pill" data-cat="tour">Du lịch</button>
-      <button class="pill" data-cat="service">Sản phẩm</button>
-      <button class="pill" data-cat="event">Sự kiện</button>
+    <!-- Filter Pills -->
+    <div class="sb-pills">
+      <button class="pill active" data-cat="all"><i>📍</i> Tất cả</button>
+      <button class="pill" data-cat="tour"><i>🏞️</i> Du lịch</button>
+      <button class="pill" data-cat="service"><i>🛍️</i> Sản phẩm</button>
+      <button class="pill" data-cat="event"><i>🎉</i> Sự kiện</button>
     </div>
 
+    <!-- Stats Summary -->
     <div class="stats">
-      <div class="stat-row"><span>Tất cả</span><b id="stat-all">0</b></div>
-      <div class="stat-row"><span>Du lịch</span><b id="stat-tour">0</b></div>
-      <div class="stat-row"><span>Sản phẩm – Dịch vụ</span><b id="stat-svc">0</b></div>
-      <div class="stat-row"><span>Sự kiện</span><b id="stat-evt">0</b></div>
+      <span class="stat-badge">Tất cả: <b id="stat-all">0</b></span>
+      <span class="stat-badge">Du lịch: <b id="stat-tour">0</b></span>
+      <span class="stat-badge">Sản phẩm: <b id="stat-svc">0</b></span>
+      <span class="stat-badge">Sự kiện: <b id="stat-evt">0</b></span>
     </div>
 
-    <div class="list" id="spot-list"></div>
+    <!-- Spot List -->
+    <div class="sb-list" id="spot-list"></div>
 
-    <footer class="tabs-bottom">
-      <button class="tab" id="open-explore"><span class="material-icons">travel_explore</span> Khám phá</button>
-      <button class="tab" id="open-profile"><span class="material-icons">account_circle</span> Cá nhân</button>
-    </footer>
+    <!-- Bottom Buttons -->
+    <div class="sb-bottom">
+      <button id="open-explore" class="btn-primary">
+        <span class="material-icons">travel_explore</span>
+        Khám phá
+      </button>
+      <button id="open-profile" class="btn-ghost">
+        <span class="material-icons">account_circle</span>
+        Cá nhân
+      </button>
+    </div>
   </aside>
 
-  <!-- Bản đồ -->
+  <!-- Map -->
   <div id="mapid"></div>
 
-  <!-- Dải thẻ đáy -->
+  <!-- Bottom Cards Rail -->
   <div class="cards-container" id="cards">
-    <span class="grabber"></span>
+    <button class="sheet-handle" aria-label="Thu gọn/mở rộng">
+      <div class="grabber"></div>
+    </button>
   </div>
 
-  <!-- Modal Upload -->
+  <!-- Upload Modal -->
   <dialog id="uploadModal" class="modal">
     <form id="uploadForm" method="dialog">
-      <h3>Thêm địa điểm</h3>
-      <label>Tên <input id="u-name" required /></label>
-      <label>Danh mục
+      <h3>Thêm địa điểm mới</h3>
+      
+      <label>
+        Tên địa điểm
+        <input id="u-name" type="text" placeholder="Ví dụ: Vịnh Hạ Long" required />
+      </label>
+      
+      <label>
+        Danh mục
         <select id="u-cat" required>
-          <option value="tour">Du lịch</option>
-          <option value="service">Sản phẩm</option>
-          <option value="event">Sự kiện</option>
+          <option value="tour">🏞️ Du lịch</option>
+          <option value="service">🛍️ Sản phẩm</option>
+          <option value="event">🎉 Sự kiện</option>
         </select>
       </label>
-      <label>Mô tả <textarea id="u-desc"></textarea></label>
-      <label>Ảnh thumbnail (URL) <input id="u-thumb" type="url" /></label>
-      <label>Media (URL) <input id="u-media" type="url" /></label>
+      
+      <label>
+        Mô tả
+        <textarea id="u-desc" placeholder="Mô tả ngắn về địa điểm..." rows="3"></textarea>
+      </label>
+      
+      <label>
+        Ảnh thumbnail (URL)
+        <input id="u-thumb" type="url" placeholder="https://example.com/image.jpg" />
+      </label>
+      
+      <label>
+        Media/Video (URL)
+        <input id="u-media" type="url" placeholder="https://example.com/media.jpg" />
+      </label>
+      
       <div class="latlng">
-        <label>Lat <input id="u-lat" type="number" step="any" required /></label>
-        <label>Lng <input id="u-lng" type="number" step="any" required /></label>
+        <label>
+          Latitude
+          <input id="u-lat" type="number" step="any" placeholder="20.9517" required />
+        </label>
+        <label>
+          Longitude
+          <input id="u-lng" type="number" step="any" placeholder="107.0449" required />
+        </label>
       </div>
+      
       <menu>
-        <button value="cancel">Hủy</button>
-        <button value="default" class="btn-primary">Lưu</button>
+        <button type="button" value="cancel">Hủy</button>
+        <button type="submit" value="default" class="btn-primary">Lưu</button>
       </menu>
     </form>
   </dialog>
 
-  <!-- Toast -->
+  <!-- Toast Notification -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <!-- Script -->
-  <script src="map.js?v=2" defer></script>
-
-  <style>
-    /* Logo styles */
-    .logo-container {
-      width: 50px;
-      height: 50px;
-      border-radius: 8px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .logo-image {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      padding: 4px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px;
-    }
-
-    .brand h1 {
-      margin: 0;
-      font-size: 1.3em;
-      color: #1a365d;
-    }
-
-    .caption {
-      margin: 0;
-      font-size: 0.85em;
-      color: #718096;
-    }
-
-    /* Responsive logo */
-    @media (max-width: 768px) {
-      .logo-container {
-        width: 40px;
-        height: 40px;
-      }
-      
-      .brand h1 {
-        font-size: 1.1em;
-      }
-      
-      .caption {
-        font-size: 0.8em;
-      }
-    }
-  </style>
+  <!-- App Script -->
+  <script src="map.js" defer></script>
 </body>
 </html>

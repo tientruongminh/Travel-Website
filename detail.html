@@ -342,6 +342,26 @@
       .hero-media { height: clamp(200px, 45vh, 360px); }
       .tile img, .tile video, .tile iframe { height: 160px; }
     }
+    /* Page background same as sidebar */
+body{
+  background:
+    radial-gradient(600px 400px at 0% 0%, rgba(255,216,107,.55), transparent 60%),
+    radial-gradient(700px 500px at 50% 35%, rgba(137,240,207,.45), transparent 65%),
+    radial-gradient(900px 600px at 100% 100%, rgba(31,129,117,.30), transparent 65%),
+    linear-gradient(135deg,#f7fffd 0%, #eefaf7 100%);
+}
+
+/* Thẻ .wrap để nền “thở” hơn một chút */
+.wrap{
+  background: transparent;            /* giữ trong suốt để thấy nền body */
+  border-radius: 16px;
+}
+
+/* Hero giữ viền nổi bật trên nền mới */
+.hero{
+  box-shadow: 0 16px 40px rgba(31,129,117,.18);
+}
+
   </style>
 </head>
 <body>
@@ -747,6 +767,7 @@
         el.textContent = JSON.stringify(ld);
         document.head.appendChild(el);
       }
+      const DATA_URL = `${location.origin}/data/spots.json`; 
 
       async function boot() {
         hero.innerHTML = '';
@@ -754,7 +775,7 @@
 
         let list = [];
         try {
-          const res = await fetch('data/spots.json', { credentials: 'omit', cache: 'no-cache' });
+          const res = await fetch(DATA_URL, { cache: 'no-cache' });
           if (!res.ok) throw new Error('HTTP ' + res.status);
           list = await res.json();
         } catch (err) {
