@@ -158,8 +158,8 @@ if (typeof turf !== "undefined" &&
 
     // B2. Làm trơn cực mạnh, giảm độ gấp khúc
     units = turf.simplify(units, {
-      tolerance: 0.0035,   // càng lớn càng mượt; 0.003–0.004 là ổn vùng Hạ Long
-      highQuality: false
+      tolerance: 0.0002,   // càng lớn càng mượt; 0.003–0.004 là ổn vùng Hạ Long
+      highQuality: true  
     });
 
     console.log("✨ Units filtered & simplified for smooth coastlines");
