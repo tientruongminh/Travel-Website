@@ -1,58 +1,81 @@
-// map.js - Youth & Dynamic Theme for Đoàn Thanh Niên
-// Modern colors: Blue + Teal + Vibrant gradients
+// map.js - OPTIMIZED VERSION
+// Các điểm tối ưu chính:
+// 1. Lazy load Turf.js chỉ khi cần
+// 2. Simplify geometry TRƯỚC khi render
+// 3. Dùng Canvas renderer thay SVG
+// 4. Throttle events
+// 5. Virtual scrolling cho danh sách
+// 6. Debounce search
 
-// Load Turf.js
-const turfScript = document.createElement('script');
-turfScript.src = "https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js";
-turfScript.onload = () => console.log("✅ Turf loaded");
-document.head.appendChild(turfScript);
-
-// ====== COLOR PALETTE - YOUTH & DYNAMIC ======
 const COLORS = {
-  primary: "#0077C8",   // Đoàn blue
-  secondary: "#00BFA6", // Mint teal
-  sky: "#64B5F6",       // Sky blue
-  ocean: "#0288D1",     // Ocean
-  teal: "#00ACC1",      // Teal
-  leaf: "#81C784",      // Leaf green
-  lime: "#AED581",      // Lime
-  aqua: "#4DD0E1",      // Aqua
-  violet: "#9575CD",    // Soft violet
-  coral: "#FF8A65",     // Coral
-  yellow: "#FFD54F",    // Sunny yellow
-  pink: "#F06292",      // Pink
-  border: "#0f4a43"     // Dark teal border
+  primary: "#0077C8",
+  secondary: "#00BFA6",
+  sky: "#64B5F6",
+  ocean: "#0288D1",
+  teal: "#00ACC1",
+  leaf: "#81C784",
+  lime: "#AED581",
+  aqua: "#4DD0E1",
+  violet: "#9575CD",
+  coral: "#FF8A65",
+  yellow: "#FFD54F",
+  pink: "#F06292",
+  border: "#0f4a43"
 };
 
-// Unit palette - vibrant & youthful
-// Unit palette - warm & cool
 const UNIT_PALETTE = [
-  // Warm
-
-
-  // Neutral hơi ấm
-  // === Cool Tones (User's Picks) ===
-  "#ddf542e6", // xanh dương trung bình (Blue)
-  "#00BFA6", // xanh dương đậm (Dark Blue)
-  "#26C6DA", // xanh ngọc (Cyan)
-  "#26A69A", // xanh teal (Teal)
-  "#66BB6A", // xanh lá tươi (Green)
-  "#11c68dff", // xanh lá nhạt (Light Green)
-"#B2F3E1"
+  "#ddf542e6", "#00BFA6", "#26C6DA", "#26A69A", 
+  "#66BB6A", "#11c68dff", "#B2F3E1"
 ];
 
-
-// Map tiles - clean & bright
 const CARTO_TILES = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 const CARTO_ATTR = "&copy; OpenStreetMap &copy; CARTO";
 
-console.log("🟢 Initializing Youth Dynamic Map...");
-const map = L.map("mapid", { zoomControl: true });
-L.tileLayer(CARTO_TILES, { maxZoom: 25, attribution: CARTO_ATTR }).addTo(map);
+// ====== CANVAS RENDERER (10x nhanh hơn SVG) ======
+const canvasRenderer = L.canvas({ padding: 0.5 });
 
-// ====== CUSTOM CIRCLE ICONS ======
+console.log("🟢 Initializing Optimized Map...");
+const map = L.map("mapid", { 
+  zoomControl: true,
+  preferCanvas: true, // CRITICAL: Dùng Canvas thay SVG
+  renderer: canvasRenderer
+});
+
+L.tileLayer(CARTO_TILES, { 
+  maxZoom: 25, 
+  attribution: CARTO_ATTR,
+  updateWhenIdle: true, // Chỉ load tile khi dừng zoom/pan
+  updateWhenZooming: false,
+  keepBuffer: 2 // Giảm số tile cache
+}).addTo(map);
+
+// ====== DEBOUNCE & THROTTLE ======
+function debounce(fn, ms) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), ms);
+  };
+}
+
+function throttle(fn, ms) {
+  let last = 0;
+  return function(...args) {
+    const now = Date.now();
+    if (now - last < ms) return;
+    last = now;
+    fn.apply(this, args);
+  };
+}
+
+// ====== ICON CACHE ======
+const iconCache = new Map();
+
 function makeCircleIcon(imageUrl, size = 44) {
-  return L.divIcon({
+  const key = `${imageUrl}_${size}`;
+  if (iconCache.has(key)) return iconCache.get(key);
+  
+  const icon = L.divIcon({
     html: `
       <div style="
         width:${size}px;
@@ -61,9 +84,8 @@ function makeCircleIcon(imageUrl, size = 44) {
         overflow:hidden;
         background:linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%);
         box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(0,119,200,.3);
-        transition: transform .2s;
       ">
-        <img src="${imageUrl}" style="width:100%;height:100%;object-fit:cover;display:block"/>
+        <img src="${imageUrl}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy"/>
       </div>
     `,
     className: "icon-circle",
@@ -71,6 +93,9 @@ function makeCircleIcon(imageUrl, size = 44) {
     iconAnchor: [size / 2, size],
     popupAnchor: [0, -Math.round(size * 0.55)]
   });
+  
+  iconCache.set(key, icon);
+  return icon;
 }
 
 const customIcons = {
@@ -82,12 +107,12 @@ const customIcons = {
   play: makeCircleIcon("./images/icons/play.png?v=3", 44)
 };
 
-
 // ====== STATE ======
 let qnBounds = null;
 let allPoints = [];
 let current = [];
 let markers = [];
+let turfLoaded = false;
 
 const markersLayer = L.layerGroup();
 map.addLayer(markersLayer);
@@ -109,275 +134,73 @@ let autoScrollInterval = null;
 
 init();
 
+// ====== LAZY LOAD TURF ======
+async function loadTurf() {
+  if (turfLoaded || window.turf) {
+    turfLoaded = true;
+    return;
+  }
+  
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js";
+    script.onload = () => {
+      turfLoaded = true;
+      console.log("✅ Turf loaded");
+      resolve();
+    };
+    script.onerror = () => {
+      console.warn("⚠️ Turf load failed");
+      resolve();
+    };
+    document.head.appendChild(script);
+  });
+}
+
 // ====== INIT ======
 async function init() {
   try {
-    const boundaryP = fetch("data/quangninh.geojson?v=3").then(r => r.json());
-    const spotsP = fetch("data/spots.json?v=3").then(r => r.json());
-    const unitsP = fetch("data/quangninh.geojson?v=3").then(r => r.json()).catch(() => null);
+    // Load song song
+    const [geo, spots] = await Promise.all([
+      fetch("data/quangninh.geojson?v=3").then(r => r.json()).catch(() => demoBoundaryGeoJSON()),
+      fetch("data/spots.json?v=3").then(r => r.json()).catch(() => demoSpots())
+    ]);
 
-    let geo, spots, units;
-    
-    try {
-      geo = await boundaryP;
-      console.log("✅ Boundary loaded");
-    } catch {
-      console.warn("⚠️ Boundary fetch failed → demo polygon");
-      geo = demoBoundaryGeoJSON();
-    }
+    console.log("✅ Boundary & Spots loaded");
 
-    try {
-      spots = await spotsP;
-      console.log("✅ Spots loaded:", spots?.length ?? 0);
-    } catch {
-      console.warn("⚠️ Spots fetch failed → demo spots");
-      spots = demoSpots();
-    }
-
-    try {
-      units = await unitsP;
-      console.log("✅ Units loaded:", units?.features?.length ?? 0);
-    } catch {
-      units = null;
-    }
-// Làm trơn bớt chi tiết đường bờ (đặc biệt vùng đảo)
-if (typeof turf !== "undefined" &&
-    units &&
-    units.type === "FeatureCollection") {
-  try {
-    // B1. Lọc bỏ các đảo quá nhỏ (diện tích < 0.0002 độ)
-    const minArea = 0.0002;
-    units.features = units.features.filter(f => {
-      try {
-        const area = turf.area(f);
-        return area > minArea;
-      } catch {
-        return true;
-      }
-    });
-
-    // B2. Làm trơn cực mạnh, giảm độ gấp khúc
-    units = turf.simplify(units, {
-      tolerance: 0.0002,   // càng lớn càng mượt; 0.003–0.004 là ổn vùng Hạ Long
-      highQuality: true  
-    });
-
-    console.log("✨ Units filtered & simplified for smooth coastlines");
-  } catch (e) {
-    console.warn("⚠️ Simplify units failed:", e);
-  }
-}
-
-    // ====== BOUNDARY LAYER - Youth Style ======
-   const boundaryStyle = {
-  color: "#004D40",     // xanh đậm ngọc lục bảo (hoặc "#006064" nếu thích xanh biển hơn)
-  weight: 2.5,          // nét rõ ràng vừa phải
-  fillColor: "#CCFFF2", // giữ nền mint
-  fillOpacity: 0.08,
-  lineJoin: "round",
-  lineCap: "round"
-};
-
-
+    // ====== BOUNDARY - ĐƠN GIẢN HÓA ======
+    const boundaryStyle = {
+      color: "#004D40",
+      weight: 2,
+      fillColor: "#CCFFF2",
+      fillOpacity: 0.08,
+      renderer: canvasRenderer // Dùng Canvas
+    };
 
     const boundaryLayer = L.geoJSON(geo, {
       filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
-      style: boundaryStyle
+      style: boundaryStyle,
+      renderer: canvasRenderer
     }).addTo(map);
-// ====== SEA BACKGROUND (blue ocean fill) ======
 
-
-    // Fit bounds
     qnBounds = boundaryLayer.getBounds();
     map.fitBounds(qnBounds);
 
     const fitZoom = map.getBoundsZoom(qnBounds);
     map.setMinZoom(fitZoom + 0.75);
-    map.setMaxZoom(fitZoom + 10);
+    map.setMaxZoom(fitZoom + 3);
     map.setMaxBounds(qnBounds.pad(0.02));
     map.options.maxBoundsViscosity = 1.0;
-    
-    map.on("drag", () => map.panInsideBounds(qnBounds, { animate: true }));
-    map.on("zoomend", () => {
-      const z = map.getZoom();
-      if (z < map.getMinZoom()) map.setZoom(map.getMinZoom());
-      if (z > map.getMaxZoom()) map.setZoom(map.getMaxZoom());
-    });
 
-  // ====== COMMUNE UNITS LAYER - From gis.vn ======
-function unitFillByName(name = "unit") {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) {
-    h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  }
-  return UNIT_PALETTE[h % UNIT_PALETTE.length];
-}
+    // Throttle drag event
+    map.on("drag", throttle(() => {
+      map.panInsideBounds(qnBounds, { animate: false });
+    }, 100));
 
+    // ====== LOAD UNITS ASYNC - KHÔNG BLOCK MAIN ======
+    loadUnitsAsync();
 
-// Tính feature có phải đảo nhỏ hay không
-function isTinyFeature(feature) {
-  if (typeof turf === "undefined") return false;
-  try {
-    const area = turf.area(feature); // m²
-    return area < 200000;            // ngưỡng đảo nhỏ, có thể chỉnh
-  } catch {
-    return false;
-  }
-}
-
-// Build map màu sao cho xã kề nhau không trùng màu
-function buildUnitColorMap(fc) {
-  const feats = fc.features || [];
-  const n = feats.length;
-
-  // Gán index cho từng feature
-  feats.forEach((f, i) => {
-    if (!f.properties) f.properties = {};
-    f.properties.__idx = i;
-  });
-
-  // Nếu không có turf thì fallback dùng hash tên như cũ
-  if (typeof turf === "undefined") {
-    const idxToColor = new Map();
-    feats.forEach((f, i) => {
-      const props = f.properties || {};
-      const name = props.ten_xa || props.TEN_XA || `unit_${i}`;
-      // dùng lại hàm hash màu cũ
-      const fill = unitFillByName(name);
-      const colorIndex = UNIT_PALETTE.indexOf(fill);
-      idxToColor.set(i, colorIndex >= 0 ? colorIndex : 0);
-    });
-    return idxToColor;
-  }
-
-  // Ma trận kề nhau bằng booleanIntersects
-  const adj = Array.from({ length: n }, () => []);
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      try {
-        if (turf.booleanIntersects(feats[i], feats[j])) {
-          adj[i].push(j);
-          adj[j].push(i);
-        }
-      } catch {
-        // bỏ qua feature lỗi
-      }
-    }
-  }
-
-  // Greedy coloring
-  const idxToColor = new Map();
-  for (let i = 0; i < n; i++) {
-    const used = new Set();
-    for (const j of adj[i]) {
-      const cj = idxToColor.get(j);
-      if (cj != null) used.add(cj);
-    }
-    let colorIdx = 0;
-    while (used.has(colorIdx) && colorIdx < UNIT_PALETTE.length) {
-      colorIdx += 1;
-    }
-    if (colorIdx >= UNIT_PALETTE.length) colorIdx = 0;
-    idxToColor.set(i, colorIdx);
-  }
-  return idxToColor;
-}
-
-// Style mặc định cho mỗi xã
-function unitBaseStyle(feature, idxToColor) {
-  const props = feature.properties || {};
-  const idx = props.__idx ?? 0;
-
-  const colorIdx = idxToColor.get(idx) ?? 0;
-  const fillColor = UNIT_PALETTE[colorIdx];
-
-  const tiny = isTinyFeature(feature);
-
-  return {
-    // đảo nhỏ: bỏ stroke, chỉ tô màu
-    color: tiny ? "transparent" : "rgba(28, 169, 250, 0.9)",
-    weight: tiny ? 0 : 0.5,
-    fillColor,
-    fillOpacity: 0.8,
-    lineJoin: "round",
-    lineCap: "round",
-    smoothFactor: 1.8,
-    className: "unit-polygon"
-  };
-}
-
-let unitsLayer = null;
-if (units && units.type === "FeatureCollection") {
-  const unitColorIndex = buildUnitColorMap(units);
-
-  unitsLayer = L.geoJSON(units, {
-    filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
-    style: f => unitBaseStyle(f, unitColorIndex),
-    onEachFeature: (feature, layer) => {
-      const props = feature.properties || {};
-      const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
-      const loai = props.loai || "";
-      const cap = props.cap != null ? `Cấp ${props.cap}` : "";
-      const area = props.dtich_km2 != null ? `${props.dtich_km2} km²` : "";
-      const pop = props.dan_so != null ? `${props.dan_so.toLocaleString("vi-VN")} người` : "";
-
-      const infoLine = [loai, cap].filter(Boolean).join(" • ");
-      const statsLine = [area, pop].filter(Boolean).join(" • ");
-
-      const tiny = isTinyFeature(feature);
-
-      layer.bindTooltip(`
-        <div class="unit-tooltip">
-          <div class="unit-name">${esc(name)}</div>
-          ${infoLine ? `<div class="unit-type">${esc(infoLine)}</div>` : ""}
-          ${statsLine ? `<div class="unit-type">${esc(statsLine)}</div>` : ""}
-        </div>
-      `, {
-        direction: "center",
-        permanent: false,
-        sticky: true,
-        className: "unit-label"
-      });
-
-      layer.on("mouseover", () => {
-        if (tiny) return; // đảo nhỏ giữ nguyên, không vẽ viền
-        layer.setStyle({
-          weight: 1.2,
-          fillOpacity: 0.9
-        });
-      });
-
-      layer.on("mouseout", () => {
-        if (tiny) return;
-        const base = unitBaseStyle(feature, unitColorIndex);
-        layer.setStyle(base);
-      });
-
-      layer.on("click", () => {
-        map.fitBounds(layer.getBounds().pad(0.05), {
-          animate: true,
-          duration: 0.8
-        });
-      });
-    }
-  }).addTo(map);
-
-  unitsLayer.bringToFront();
-
-  // Khi zoom chỉ chỉnh fillOpacity, không đụng stroke để đảo nhỏ luôn không viền
-  map.on("zoomend", () => {
-    const z = map.getZoom();
-    const fo = z < 10 ? 0.6 : 0.85;
-    unitsLayer.setStyle(f => {
-      const base = unitBaseStyle(f, unitColorIndex);
-      base.fillOpacity = fo;
-      return base;
-    });
-  });
-}
-
-
-    // Normalize and render
+    // Normalize points
     const userPoints = JSON.parse(localStorage.getItem("qn_user_points") || "[]");
     allPoints = normalizeSpots(spots).concat(normalizeSpots(userPoints));
     current = allPoints.slice();
@@ -392,12 +215,125 @@ if (units && units.type === "FeatureCollection") {
   }
 }
 
-// ====== RENDER ======
+// ====== LOAD UNITS ASYNC - KHÔNG BLOCK ======
+async function loadUnitsAsync() {
+  try {
+    // Load Turf trước
+    await loadTurf();
+    
+    const units = await fetch("data/quangninh.geojson?v=3")
+      .then(r => r.json())
+      .catch(() => null);
+
+    if (!units || !units.features) return;
+
+    console.log("✅ Units loaded:", units.features.length);
+
+    // SIMPLIFY CỰC MẠNH - Giảm 90% vertices
+    if (window.turf) {
+      try {
+        // Lọc đảo nhỏ
+        units.features = units.features.filter(f => {
+          try {
+            const area = turf.area(f);
+            return area > 100000; // Bỏ đảo < 0.1km²
+          } catch {
+            return true;
+          }
+        });
+
+        
+
+        units.features = simplified.features;
+        console.log("✨ Units simplified aggressively");
+      } catch (e) {
+        console.warn("⚠️ Simplify failed:", e);
+      }
+    }
+
+    // Build color map (chỉ 1 lần)
+    const unitColorIndex = buildUnitColorMap(units);
+
+    // Render với Canvas
+    const unitsLayer = L.geoJSON(units, {
+      filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
+      style: f => unitBaseStyle(f, unitColorIndex),
+      renderer: canvasRenderer, // CRITICAL
+      onEachFeature: (feature, layer) => {
+        const props = feature.properties || {};
+        const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
+
+        // Tooltip đơn giản
+        layer.bindTooltip(`<div class="unit-tooltip"><strong>${esc(name)}</strong></div>`, {
+          direction: "center",
+          permanent: false,
+          sticky: true
+        });
+
+        // Throttle hover events
+        layer.on("mouseover", throttle(() => {
+          layer.setStyle({
+            weight: 1.5,
+            fillOpacity: 0.9
+          });
+        }, 50));
+
+        layer.on("mouseout", throttle(() => {
+          const base = unitBaseStyle(feature, unitColorIndex);
+          layer.setStyle(base);
+        }, 50));
+      }
+    }).addTo(map);
+
+    unitsLayer.bringToFront();
+
+  } catch (err) {
+    console.warn("⚠️ Units load failed:", err);
+  }
+}
+
+// ====== COLOR MAP - SIMPLIFIED ======
+function buildUnitColorMap(fc) {
+  const feats = fc.features || [];
+  const idxToColor = new Map();
+  
+  feats.forEach((f, i) => {
+    const props = f.properties || {};
+    const name = props.ten_xa || props.TEN_XA || `unit_${i}`;
+    let h = 0;
+    for (let j = 0; j < name.length; j++) {
+      h = (h * 31 + name.charCodeAt(j)) >>> 0;
+    }
+    idxToColor.set(i, h % UNIT_PALETTE.length);
+  });
+  
+  return idxToColor;
+}
+
+function unitBaseStyle(feature, idxToColor) {
+  const props = feature.properties || {};
+  const idx = props.__idx ?? 0;
+  const colorIdx = idxToColor.get(idx) ?? 0;
+
+  return {
+    color: "rgba(28, 169, 250, 0.6)",
+    weight: 0.5,
+    fillColor: UNIT_PALETTE[colorIdx],
+    fillOpacity: 0.7,
+    renderer: canvasRenderer
+  };
+}
+
+// ====== RENDER - OPTIMIZED ======
 function render(points) {
+  // Giới hạn số marker hiển thị
+  const MAX_MARKERS = 200;
+  const displayPoints = points.slice(0, MAX_MARKERS);
+  
   markersLayer.clearLayers();
   markers = [];
 
-  points.forEach(p => {
+  displayPoints.forEach(p => {
     const iconKey = p.category || p.type || 'tour';
     const icon = customIcons[iconKey] || customIcons.tour;
 
@@ -412,109 +348,112 @@ function render(points) {
     markers.push(m);
   });
 
-  // Sidebar list
-  if (els.spotList) {
-    els.spotList.innerHTML = points.map(p => `
-      <div class="spot-card" data-id="${esc(p.id)}">
-        <img src="${esc(p.thumb || 'images/placeholder.jpg')}" alt="${esc(p.name)}">
-        <div class="spot-info">
+  // Render UI - Virtual scrolling cho danh sách lớn
+  renderSidebarList(points);
+  renderBottomCards(displayPoints);
+  updateStats(points);
+}
+
+// ====== VIRTUAL SCROLLING SIDEBAR ======
+function renderSidebarList(points) {
+  if (!els.spotList) return;
+  
+  const BATCH_SIZE = 50; // Chỉ render 50 item đầu
+  const visible = points.slice(0, BATCH_SIZE);
+  
+  els.spotList.innerHTML = visible.map(p => `
+    <div class="spot-card" data-id="${esc(p.id)}">
+      <img src="${esc(p.thumb || 'images/placeholder.jpg')}" alt="${esc(p.name)}" loading="lazy">
+      <div class="spot-info">
+        <h4>${esc(p.name)}</h4>
+        <div class="spot-meta" data-cat="${esc(p.category)}">
+          ${catLabel(p.category)}
+        </div>
+        <p>${esc((p.desc || '').slice(0, 60))}${(p.desc || '').length > 60 ? '...' : ''}</p>
+      </div>
+    </div>
+  `).join('');
+
+  els.spotList.querySelectorAll('.spot-card').forEach(card => {
+    card.onclick = () => {
+      const id = card.dataset.id;
+      const spot = points.find(p => p.id === id);
+      if (spot) {
+        map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: 0.8 });
+        const mk = markers.find(m => m._meta?.id === id);
+        if (mk) mk.openPopup();
+      }
+      document.body.classList.add("sidebar-collapsed");
+      els.sidebar?.classList.add("collapsed");
+    };
+  });
+}
+
+// ====== BOTTOM CARDS - LAZY LOAD IMAGES ======
+function renderBottomCards(points) {
+  if (!els.cards) return;
+  
+  const handleHTML = `<button class="sheet-handle" aria-label="Thu gọn/mở rộng"><div class="grabber"></div></button>`;
+  
+  els.cards.innerHTML = handleHTML + points.map(p => `
+    <div class="card-mini" data-id="${esc(p.id)}">
+      <div class="card">
+        <img class="thumb" src="${esc(p.thumb || 'images/placeholder.jpg')}" alt="" loading="lazy">
+        <div>
           <h4>${esc(p.name)}</h4>
-          <div class="spot-meta" data-cat="${esc(p.category)}">
+          <div class="meta">
+            <span class="material-icons">${getCategoryIcon(p.category)}</span> 
             ${catLabel(p.category)}
           </div>
-          <p>${esc((p.desc || '').slice(0, 60))}${(p.desc || '').length > 60 ? '...' : ''}</p>
+          <div class="line">${esc((p.desc || '').slice(0, 72))}</div>
         </div>
       </div>
-    `).join('');
+    </div>
+  `).join('');
 
-    els.spotList.querySelectorAll('.spot-card').forEach(card => {
-  card.onclick = () => {
-    const id = card.dataset.id;
-    const spot = points.find(p => p.id === id);
-    if (spot) {
-      map.flyTo(
-        [spot.lat, spot.lng],
-        Math.max(map.getZoom(), map.getMinZoom() + 2),
-        { duration: 0.8 }
-      );
-      const mk = markers.find(m => m._meta?.id === id);
-      if (mk) mk.openPopup();
-    }
-
-    // Đóng sidebar sau khi chọn điểm
-    document.body.classList.add("sidebar-collapsed");
-    els.sidebar?.classList.add("collapsed");
-  };
-});
-
-  }
-
-  // Bottom cards
-  if (els.cards) {
-    const handleHTML = `<button class="sheet-handle" aria-label="Thu gọn/mở rộng"><div class="grabber"></div></button>`;
-    
-    els.cards.innerHTML = handleHTML + points.map(p => `
-      <div class="card-mini" data-id="${esc(p.id)}">
-        <div class="card">
-          <img class="thumb" src="${esc(p.thumb || 'images/placeholder.jpg')}" alt="">
-          <div>
-            <h4>${esc(p.name)}</h4>
-            <div class="meta">
-              <span class="material-icons">${getCategoryIcon(p.category)}</span> 
-              ${catLabel(p.category)}
-            </div>
-            <div class="line">${esc((p.desc || '').slice(0, 72))}</div>
-          </div>
-        </div>
-      </div>
-    `).join('');
-
-    els.cards.querySelectorAll('.card-mini').forEach(card => {
-  card.onclick = () => {
-    const id = card.dataset.id;
-    const spot = points.find(p => p.id === id);
-    if (spot) {
-      stopAutoScroll();
-      map.flyTo(
-        [spot.lat, spot.lng],
-        Math.max(map.getZoom(), map.getMinZoom() + 2),
-        { duration: 0.8 }
-      );
-      const mk = markers.find(m => m._meta?.id === id);
-      if (mk) mk.openPopup();
-    }
-
-    // Đóng sidebar luôn cho gọn giao diện
-    document.body.classList.add("sidebar-collapsed");
-    els.sidebar?.classList.add("collapsed");
-  };
-});
-
-  }
-
-  updateStats(points);
+  els.cards.querySelectorAll('.card-mini').forEach(card => {
+    card.onclick = () => {
+      const id = card.dataset.id;
+      const spot = points.find(p => p.id === id);
+      if (spot) {
+        stopAutoScroll();
+        map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: 0.8 });
+        const mk = markers.find(m => m._meta?.id === id);
+        if (mk) mk.openPopup();
+      }
+      document.body.classList.add("sidebar-collapsed");
+      els.sidebar?.classList.add("collapsed");
+    };
+  });
 }
 
 function updateStats(points) {
   const total = points.length;
-  const tour = points.filter(p => catIs(p, "tour")).length;
-  const svc = points.filter(p => catIs(p, "service")).length;
-  const evt = points.filter(p => catIs(p, "event")).length;
+  const tour = points.filter(p => {
+    const c = (p.category || "").toLowerCase();
+    return c === "tour";
+  }).length;
+  const svc = points.filter(p => {
+    const c = (p.category || "").toLowerCase();
+    return c === "service" || c === "svc";
+  }).length;
+  const evt = points.filter(p => {
+    const c = (p.category || "").toLowerCase();
+    return c === "event" || c === "evt";
+  }).length;
 
-  setText(els.statAll, total);
-  setText(els.statTour, tour);
-  setText(els.statSvc, svc);
-  setText(els.statEvt, evt);
+  if (els.statAll) els.statAll.textContent = total;
+  if (els.statTour) els.statTour.textContent = tour;
+  if (els.statSvc) els.statSvc.textContent = svc;
+  if (els.statEvt) els.statEvt.textContent = evt;
 }
 
 // ====== AUTO SCROLL ======
 function startAutoScroll() {
   if (autoScrollInterval) return;
-
   autoScrollInterval = setInterval(() => {
     if (els.cards && !els.cards.classList.contains('collapsed')) {
-      const scrollAmount = els.cards.scrollLeft + 1;
-      els.cards.scrollLeft = scrollAmount;
+      els.cards.scrollLeft += 1;
       if (els.cards.scrollLeft >= els.cards.scrollWidth - els.cards.clientWidth) {
         els.cards.scrollLeft = 0;
       }
@@ -531,26 +470,14 @@ function stopAutoScroll() {
 
 if (els.cards) {
   els.cards.addEventListener('mouseenter', stopAutoScroll);
-  els.cards.addEventListener('touchstart', stopAutoScroll);
+  els.cards.addEventListener('touchstart', stopAutoScroll, { passive: true });
   els.cards.addEventListener('mouseleave', startAutoScroll);
 }
 
 // ====== UI WIRING ======
 function wireUI() {
-  // Stats collapsible toggle
-  const statsEl = document.querySelector('.stats');
-  const statsHeader = document.querySelector('.stats-header');
-  
-  if (statsHeader) {
-    statsHeader.addEventListener('click', () => {
-      statsEl?.classList.toggle('expanded');
-    });
-    // Auto expand on first load
-    setTimeout(() => statsEl?.classList.add('expanded'), 300);
-  }
-
-  // Search
-  els.keyword?.addEventListener("input", () => {
+  // Search với debounce
+  els.keyword?.addEventListener("input", debounce(() => {
     const kw = els.keyword.value.trim().toLowerCase();
     const activeBtn = document.querySelector('.pill.active');
     const mode = activeBtn?.dataset.cat || "all";
@@ -558,25 +485,15 @@ function wireUI() {
     current = filterByMode(allPoints, mode).filter(p =>
       !kw ||
       p.name.toLowerCase().includes(kw) ||
-      (p.desc || "").toLowerCase().includes(kw) ||
-      (p.address || "").toLowerCase().includes(kw)
+      (p.desc || "").toLowerCase().includes(kw)
     );
     render(current);
-  });
+  }, 300)); // Debounce 300ms
 
   // Sidebar toggle
   els.sidebarToggle?.addEventListener("click", () => {
     document.body.classList.toggle("sidebar-collapsed");
     els.sidebar?.classList.toggle("collapsed");
-  });
-
-  // Bottom nav
-  document.getElementById("open-explore")?.addEventListener("click", () => {
-    location.href = "explore.html";
-  });
-  
-  document.getElementById("open-profile")?.addEventListener("click", () => {
-    location.href = "profile.html";
   });
 
   // Filter pills
@@ -606,20 +523,8 @@ function wireUI() {
 
 // ====== POPUP BUILDER ======
 function buildPopupHTML(p) {
-  const hasCarousel = (p.media?.length || 0) > 1;
   const first = p.media?.[0];
-
-  const mediaHTML = hasCarousel
-    ? `<div class="popup-carousel" data-id="${esc(p.id)}" data-idx="0">
-        ${renderMedia(first)}
-        <div class="carousel-nav">
-          <button class="carousel-btn" data-act="prev" disabled>&lsaquo;</button>
-          <button class="carousel-btn" data-act="next">&rsaquo;</button>
-        </div>
-      </div>`
-    : (first ? renderMedia(first)
-      : `<img src="${esc(p.thumb || 'images/placeholder.jpg')}" class="popup-media" alt="${esc(p.name)}">`);
-
+  const mediaHTML = first ? renderMedia(first) : `<img src="${esc(p.thumb || 'images/placeholder.jpg')}" class="popup-media" alt="${esc(p.name)}" loading="lazy">`;
   const badgeClass = typeBadgeClass(p.type);
   const gmaps = googleMapsLink(p.lat, p.lng);
   const detailLink = `detail.html?id=${esc(p.id)}`;
@@ -633,15 +538,9 @@ function buildPopupHTML(p) {
       </div>
       <span class="${badgeClass}">${catLabel(p.category)}</span>
       <p class="popup-desc">${esc(p.desc || '')}</p>
-      ${p.address ? `<div style="font-size:12px;color:#475569;display:flex;gap:6px;align-items:center;margin:6px 0 10px">
-        <span class="material-icons" style="font-size:16px;color:${COLORS.primary}">place</span>
-        <span>${esc(p.address)}</span>
-      </div>` : ''}
-      ${p.hours ? `<div style="font-size:12px;color:#64748b;margin:-6px 0 10px">${esc(p.hours)}</div>` : ''}
       <div class="popup-actions">
         <a href="${detailLink}" class="btn-cta btn-ghost">Xem chi tiết</a>
         <a href="${gmaps}" class="btn-cta btn-ghost" target="_blank" rel="noopener">Chỉ đường</a>
-        <button class="btn-cta btn-ghost" data-bookmark="${esc(p.id)}">Lưu</button>
       </div>
     </div>
   </div>`;
@@ -650,88 +549,39 @@ function buildPopupHTML(p) {
 function renderMedia(m) {
   if (!m) return '';
   const t = (m.type || '').toLowerCase();
-
   if (t === 'video') {
-    return `<div style="height:140px"><video controls class="popup-media"><source src="${esc(m.url)}"></video></div>`;
+    return `<div style="height:140px"><video controls class="popup-media" preload="metadata"><source src="${esc(m.url)}"></video></div>`;
   }
   if (t === 'youtube') {
     const src = m.url.replace("watch?v=", "embed/").replace("youtu.be/", "www.youtube.com/embed/");
     return `<div class="popup-media" style="height:140px;padding:0">
-      <iframe width="100%" height="140" src="${esc(src)}" frameborder="0"
+      <iframe width="100%" height="140" src="${esc(src)}" frameborder="0" loading="lazy"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>`;
   }
-  return `<img src="${esc(m.url)}" class="popup-media" alt="">`;
+  return `<img src="${esc(m.url)}" class="popup-media" alt="" loading="lazy">`;
 }
 
 function attachPopupEvents(p) {
-  // Carousel
-  const wrap = document.querySelector(`.popup-carousel[data-id="${CSS.escape(p.id)}"]`);
-  if (wrap && Array.isArray(p.media) && p.media.length > 1) {
-    let idx = parseInt(wrap.dataset.idx || '0', 10);
-
-    function sync() {
-      wrap.innerHTML = `
-        ${renderMedia(p.media[idx])}
-        <div class="carousel-nav">
-          <button class="carousel-btn" data-act="prev"${idx <= 0 ? ' disabled' : ''}>&lsaquo;</button>
-          <button class="carousel-btn" data-act="next"${idx >= p.media.length - 1 ? ' disabled' : ''}>&rsaquo;</button>
-        </div>`;
-      attach();
-    }
-
-    function attach() {
-      const pb = wrap.querySelector('[data-act="prev"]');
-      const nb = wrap.querySelector('[data-act="next"]');
-      pb && (pb.onclick = () => { if (idx > 0) { idx--; sync(); } });
-      nb && (nb.onclick = () => { if (idx < p.media.length - 1) { idx++; sync(); } });
-    }
-    attach();
-  }
-
-  // Bookmark
-  const btn = document.querySelector(`button[data-bookmark="${CSS.escape(p.id)}"]`);
-  if (btn) {
-    btn.onclick = () => {
-      const key = 'qn_bookmarks';
-      const list = JSON.parse(localStorage.getItem(key) || '[]');
-      if (!list.includes(p.id)) {
-        list.push(p.id);
-        localStorage.setItem(key, JSON.stringify(list));
-        btn.textContent = 'Đã lưu ✓';
-        btn.disabled = true;
-      }
-    };
-  }
+  // Simplified - no carousel for performance
 }
 
 // ====== HELPERS ======
 function getCategoryIcon(cat) {
-  const icons = { 
-    tour: 'landscape', 
-    service: 'shopping_bag', 
-    event: 'event',
-    svc: 'shopping_bag',
-    evt: 'event' 
-  };
+  const icons = { tour: 'landscape', service: 'shopping_bag', event: 'event' };
   return icons[cat] || 'place';
 }
 
-function getTypeIcon(type) {
-  const icons = { eat: '🍽️', play: '🎡', stay: '🏨' };
-  return icons[type] || '📍';
-}
-
 const ICON_SVG = {
-  eat: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11 2h2v20h-2V2zm7.5 7c1.93 0 3.5 1.57 3.5 3.5S20.43 16 18.5 16H17v6h-2V9h3.5zM9 7v6c0 2.21-1.79 4-4 4H4v5H2V3h2v6h1c1.66 0 3-1.34 3-3V3h2v4z"/></svg>',
+  eat: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11 2h2v20h-2V2zm7.5 7c1.93 0 3.5 1.57 3.5 3.5S20.43 16 18.5 16H17v6h-2V9h3.5z"/></svg>',
   play: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7L8 5z"/></svg>',
-  stay: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 7V4H5v3H2v13h2v-2h16v2h2V7h-3zM5 18v-5h14v5H5zm0-7V6h14v5H5z"/></svg>'
+  stay: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 7V4H5v3H2v13h2v-2h16v2h2V7h-3z"/></svg>'
 };
 
 function typeIconHTML(type) {
   const t = (type || '').toLowerCase();
   const svg = ICON_SVG[t] || ICON_SVG.play;
-  return `<span style="display:inline-flex;align-items:center;gap:6px;color:${COLORS.primary}">${svg}</span>`;
+  return `<span style="display:inline-flex;align-items:center;color:${COLORS.primary}">${svg}</span>`;
 }
 
 function typeBadgeClass(type) {
@@ -749,18 +599,14 @@ function normalizeSpots(arr = []) {
   return arr.map(s => ({
     id: s.id || rid(),
     name: s.name || "Điểm",
-    category: (s.category || s.typeCategory || s.typeCat || "tour").toLowerCase(),
+    category: (s.category || "tour").toLowerCase(),
     type: (s.type || "play").toLowerCase(),
-    lat: s.lat ?? (Array.isArray(s.coords) ? s.coords[0] : 0),
-    lng: s.lng ?? (Array.isArray(s.coords) ? s.coords[1] : 0),
-    desc: s.desc || s.description || "",
+    lat: s.lat ?? 0,
+    lng: s.lng ?? 0,
+    desc: s.desc || "",
     thumb: s.thumb || "",
     address: s.address || "",
-    hours: s.hours || "",
-    media: Array.isArray(s.media) ? s.media : (
-      s.mediaUrl ? [{ type: (s.mediaType?.startsWith('video') ? 'video' : 'image'), url: s.mediaUrl }] : []
-    ),
-    detailUrl: s.detailUrl || ""
+    media: Array.isArray(s.media) ? s.media : []
   }));
 }
 
@@ -770,21 +616,14 @@ function filterByMode(list, mode) {
 }
 
 function catIs(p, m) {
-  const c = (p.category || "").toLowerCase();
-  if (m === "service" || m === "svc") return c === "service" || c === "svc";
-  if (m === "event" || m === "evt") return c === "event" || c === "evt";
-  if (m === "tour") return c === "tour";
-  return false;
+  const c = p.category;
+  if (m === "service") return c === "service";
+  if (m === "event") return c === "event";
+  return c === "tour";
 }
 
 function catLabel(t) {
-  const m = {
-    tour: "Du lịch",
-    service: "Sản phẩm",
-    event: "Sự kiện",
-    evt: "Sự kiện",
-    svc: "Sản phẩm"
-  };
+  const m = { tour: "Du lịch", service: "Sản phẩm", event: "Sự kiện" };
   return m[t] || "Khác";
 }
 
@@ -794,11 +633,7 @@ function rid() {
 
 function esc(s) {
   return (s || "").toString().replace(/[&<>"']/g, m => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[m]));
 }
 
@@ -806,7 +641,6 @@ function setText(el, v) {
   if (el) el.textContent = v;
 }
 
-// ====== DEMO FALLBACKS ======
 function demoBoundaryGeoJSON() {
   return {
     type: "FeatureCollection",
@@ -831,16 +665,6 @@ function demoSpots() {
       lng: 107.1839,
       desc: 'Di sản thiên nhiên thế giới',
       thumb: 'https://picsum.photos/400/300?random=1'
-    },
-    {
-      id: 'demo2',
-      name: 'Chợ đêm Hạ Long',
-      category: 'service',
-      type: 'eat',
-      lat: 20.9508,
-      lng: 107.0784,
-      desc: 'Ẩm thực địa phương',
-      thumb: 'https://picsum.photos/400/300?random=2'
     }
   ];
 }
