@@ -988,7 +988,7 @@ body.sidebar-collapsed .cards-container {
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   :root {
-    --rail-h: 180px;          /* tăng chút để đủ chỗ cho text */
+    --rail-h: 160px;          /* tăng chút để đủ chỗ cho text */
   }
 
   .cards-container {
