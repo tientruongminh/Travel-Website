@@ -589,7 +589,7 @@ body.sidebar-collapsed .cards-container {
 }
 
 .cards-container.collapsed {
-  height: 48px;
+  height: 58px;
 }
 
 .cards-container.collapsed .card {
@@ -627,14 +627,17 @@ body.sidebar-collapsed .cards-container {
 .card {
   display: flex;
   gap: 12px;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #f1f5f9;
-  background: #fff;
-  cursor: pointer;
-  transition: all .2s;
-  height: 100%;
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  height: auto;          /* cho cao tự nhiên */
+  min-height: 110px;     /* vẫn giữ cảm giác cao tối thiểu */
+  align-items: flex-start;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 119, 200, 0.1);
+  transition: all 0.2s ease;
 }
+
 
 .card:hover {
   border-color: var(--yn-teal);
@@ -985,39 +988,35 @@ body.sidebar-collapsed .cards-container {
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   :root {
-    --sidebar-w: 100%;
-    --rail-h: 120px;
-  }
-
-  #sidebar {
-    max-width: 340px;
-  }
-
-  #sidebar.collapsed {
-    transform: translateX(-100%);
-  }
-
-  #mapid {
-    left: 0;
+    --rail-h: 180px;          /* tăng chút để đủ chỗ cho text */
   }
 
   .cards-container {
-    left: 0;
-    right: 0;
-    width: 100vw;
     height: var(--rail-h);
+    max-height: var(--rail-h);
+    padding: 10px 12px 14px;
   }
 
   .card-mini {
-    width: 260px;
+    width: 280px;
   }
 
- .fab-right {
-    right: 16px !important;
-    left: auto !important;
-    top: 16px !important;
+  .card {
+    height: auto;             /* KHÔNG fix 100px nữa */
+    min-height: 110px;
+  }
+
+  .card .thumb {
+    width: 80px;
+    height: 80px;
+  }
+
+  /* Cho phép mô tả hiển thị 3 dòng thay vì 2 nếu cần */
+  .card .line {
+    -webkit-line-clamp: 3;
   }
 }
+
 /* Badge trong popup */
 .popup-badge {
   display: inline-flex;
@@ -1409,23 +1408,27 @@ body.sidebar-collapsed .cards-container {
   transition: all 0.35s ease;
 }
 
-/* === VỊ TRÍ KHI SIDEBAR ĐANG MỞ ===
-   Góc phải trên của sidebar */
+/* Khi SIDEBAR ĐANG MỞ: nút nằm ở góc phải trên của sidebar */
 body:not(.sidebar-collapsed) .fab-right {
-  left: calc(var(--sidebar-w) - 64px); /* = width sidebar - (48 nút + 16 margin) */
+  left: calc(var(--sidebar-w) - 64px);  /* sidebar_w - (48px nút + 16px margin) */
   right: auto;
 }
 
-/* === VỊ TRÍ KHI SIDEBAR ĐÃ ĐÓNG ===
-   Bay về góc trái trên màn hình */
+/* Khi SIDEBAR ĐÃ ĐÓNG: nút bay về góc trái trên màn hình */
 body.sidebar-collapsed .fab-right {
   left: 16px;
   right: auto;
 }
+
+
+
+
+
 @media (max-width: 768px) {
-  body:not(.sidebar-collapsed) .fab-right,
-  body.sidebar-collapsed .fab-right {
-    left: auto;
-    right: 16px;
+  .fab-right {
+    right: 16px !important;
+    left: auto !important;
+    top: 16px !important;
   }
 }
+
