@@ -46,7 +46,7 @@ body {
   position: fixed;
   inset: 0 auto 0 0;
   width: var(--sidebar-w);
-  max-width: 88vw;
+  max-width: 92vw;
 
   /* Gradient: TL vàng → center xanh non → BR xanh đậm */
   background:
@@ -993,4 +993,75 @@ body.sidebar-collapsed .cards-container {
   .fab-right {
     left: 12px !important;
   }
+}
+/* Badge trong popup */
+.popup-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;       /* KHÔNG cho xuống dòng */
+}
+
+/* Badge trong list bên trái */
+.spot-meta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* Badge trong card dưới đáy */
+.card .meta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+.leaflet-interactive:focus {
+  outline: none;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;     /* không cho xuống dòng trong pill */
+}
+
+/* Đảm bảo các số không bị set display:block */
+#stat-all,
+#stat-tour,
+#stat-svc,
+#stat-evt {
+  display: inline;         /* override nếu có rule span { display:block } */
+}
+/* Thanh card container phía dưới */
+#cards {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 8px 12px;         /* chừa mép trái phải */
+}
+
+/* Khung mỗi card trong carousel */
+.card-mini {
+  flex: 0 0 auto;
+  padding: 2px;              /* chừa biên cho shadow / border */
+  overflow: visible;         /* để card phóng lên không bị cắt */
+}
+
+/* Bản thân card */
+.card-mini .card {
+  border-radius: 14px;
+  border: 1px solid rgba(15, 118, 110, 0.16);
+  background: #f9fffd;
+  transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+}
+
+#cards .card-mini:first-child {
+  margin-left: 4px;
+}
+#cards .card-mini:last-child {
+  margin-right: 4px;
 }

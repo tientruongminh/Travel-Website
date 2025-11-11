@@ -292,7 +292,13 @@
       background: var(--bg);
     }
     .form-group textarea { resize: vertical; min-height: 100px; }
-    .star-rating { display: flex; gap: 8px; font-size: 20px; }
+    .star-rating {
+  display: flex;
+  flex-direction: row-reverse; /* đảo hướng hiển thị, sao 1 ở bên trái, sao 5 bên phải */
+  gap: 8px;
+  font-size: 20px;
+}
+
     .star-rating input { display: none; }
     .star-rating label {
       cursor: pointer;

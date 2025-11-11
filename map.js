@@ -25,12 +25,22 @@ const COLORS = {
 };
 
 // Unit palette - vibrant & youthful
+// Unit palette - warm & cool
 const UNIT_PALETTE = [
-  COLORS.secondary, COLORS.sky, COLORS.teal, COLORS.aqua,
-  COLORS.leaf, COLORS.lime, COLORS.ocean, COLORS.violet,
-  "#80DEEA", "#A5D6A7", "#90CAF9", "#CE93D8",
-  COLORS.yellow, COLORS.coral, COLORS.pink
+  // Warm
+
+
+  // Neutral hơi ấm
+  // === Cool Tones (User's Picks) ===
+  "#ddf542e6", // xanh dương trung bình (Blue)
+  "#00BFA6", // xanh dương đậm (Dark Blue)
+  "#26C6DA", // xanh ngọc (Cyan)
+  "#26A69A", // xanh teal (Teal)
+  "#66BB6A", // xanh lá tươi (Green)
+  "#11c68dff", // xanh lá nhạt (Light Green)
+"#B2F3E1"
 ];
+
 
 // Map tiles - clean & bright
 const CARTO_TILES = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
@@ -38,7 +48,7 @@ const CARTO_ATTR = "&copy; OpenStreetMap &copy; CARTO";
 
 console.log("🟢 Initializing Youth Dynamic Map...");
 const map = L.map("mapid", { zoomControl: true });
-L.tileLayer(CARTO_TILES, { maxZoom: 22, attribution: CARTO_ATTR }).addTo(map);
+L.tileLayer(CARTO_TILES, { maxZoom: 25, attribution: CARTO_ATTR }).addTo(map);
 
 // ====== CUSTOM CIRCLE ICONS ======
 function makeCircleIcon(imageUrl, size = 44) {
@@ -64,13 +74,14 @@ function makeCircleIcon(imageUrl, size = 44) {
 }
 
 const customIcons = {
-  tour: makeCircleIcon("./images/icons/tour.png", 44),
-  service: makeCircleIcon("./images/icons/service.png", 44),
-  event: makeCircleIcon("./images/icons/event.png", 44),
-  eat: makeCircleIcon("./images/icons/eat.png", 44),
-  stay: makeCircleIcon("./images/icons/stay.png", 44),
-  play: makeCircleIcon("./images/icons/play.png", 44)
+  tour: makeCircleIcon("./images/icons/tour.png?v=3", 44),
+  service: makeCircleIcon("./images/icons/service.png?v=3", 44),
+  event: makeCircleIcon("./images/icons/event.png?v=3", 44),
+  eat: makeCircleIcon("./images/icons/eat.png?v=3", 44),
+  stay: makeCircleIcon("./images/icons/stay.png?v=3", 44),
+  play: makeCircleIcon("./images/icons/play.png?v=3", 44)
 };
+
 
 // ====== STATE ======
 let qnBounds = null;
@@ -103,7 +114,7 @@ async function init() {
   try {
     const boundaryP = fetch("data/quangninh.geojson?v=3").then(r => r.json());
     const spotsP = fetch("data/spots.json?v=3").then(r => r.json());
-    const unitsP = fetch("data/quang_ninh_54units.geojson?v=1").then(r => r.json()).catch(() => null);
+    const unitsP = fetch("data/quangninh.geojson?v=3").then(r => r.json()).catch(() => null);
 
     let geo, spots, units;
     
@@ -129,20 +140,52 @@ async function init() {
     } catch {
       units = null;
     }
+// Làm trơn bớt chi tiết đường bờ (đặc biệt vùng đảo)
+if (typeof turf !== "undefined" &&
+    units &&
+    units.type === "FeatureCollection") {
+  try {
+    // B1. Lọc bỏ các đảo quá nhỏ (diện tích < 0.0002 độ)
+    const minArea = 0.0002;
+    units.features = units.features.filter(f => {
+      try {
+        const area = turf.area(f);
+        return area > minArea;
+      } catch {
+        return true;
+      }
+    });
+
+    // B2. Làm trơn cực mạnh, giảm độ gấp khúc
+    units = turf.simplify(units, {
+      tolerance: 0.0035,   // càng lớn càng mượt; 0.003–0.004 là ổn vùng Hạ Long
+      highQuality: false
+    });
+
+    console.log("✨ Units filtered & simplified for smooth coastlines");
+  } catch (e) {
+    console.warn("⚠️ Simplify units failed:", e);
+  }
+}
 
     // ====== BOUNDARY LAYER - Youth Style ======
-    const boundaryStyle = {
-      color: COLORS.primary,
-      weight: 3,
-      fillColor: "#E3F2FD",
-      fillOpacity: 0.15,
-      dashArray: "5, 5"
-    };
+   const boundaryStyle = {
+  color: "#004D40",     // xanh đậm ngọc lục bảo (hoặc "#006064" nếu thích xanh biển hơn)
+  weight: 2.5,          // nét rõ ràng vừa phải
+  fillColor: "#CCFFF2", // giữ nền mint
+  fillOpacity: 0.08,
+  lineJoin: "round",
+  lineCap: "round"
+};
+
+
 
     const boundaryLayer = L.geoJSON(geo, {
       filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
       style: boundaryStyle
     }).addTo(map);
+// ====== SEA BACKGROUND (blue ocean fill) ======
+
 
     // Fit bounds
     qnBounds = boundaryLayer.getBounds();
@@ -161,72 +204,178 @@ async function init() {
       if (z > map.getMaxZoom()) map.setZoom(map.getMaxZoom());
     });
 
-    // ====== 54 UNITS LAYER - Vibrant Colors ======
-    function unitFillByName(name = "unit") {
-      let h = 0;
-      for (let i = 0; i < name.length; i++) {
-        h = (h * 31 + name.charCodeAt(i)) >>> 0;
-      }
-      return UNIT_PALETTE[h % UNIT_PALETTE.length];
-    }
+  // ====== COMMUNE UNITS LAYER - From gis.vn ======
+function unitFillByName(name = "unit") {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) {
+    h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  }
+  return UNIT_PALETTE[h % UNIT_PALETTE.length];
+}
 
-    let unitsLayer = null;
-    if (units && units.type === "FeatureCollection") {
-      unitsLayer = L.geoJSON(units, {
-        filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
-        style: f => {
-          const name = f.properties?.unit_54_name || "unit";
-          return {
-            color: COLORS.border,
-            weight: 1.5,
-            fillColor: unitFillByName(name),
-            fillOpacity: 0.5,
-            className: 'unit-polygon'
-          };
-        },
-        onEachFeature: (feature, layer) => {
-          const name = feature.properties?.unit_54_name || "Chưa rõ";
-          const type = feature.properties?.unit_54_type || "";
-          
-          layer.bindTooltip(`
-            <div class="unit-tooltip">
-              <div class="unit-name">${name}</div>
-              ${type ? `<div class="unit-type">${type}</div>` : ''}
-            </div>
-          `, {
-            direction: "center",
-            permanent: false,
-            sticky: true,
-            className: "unit-label"
-          });
-          
-          layer.on("mouseover", () => {
-            layer.setStyle({ 
-              weight: 3, 
-              fillOpacity: 0.7,
-              color: COLORS.primary
-            });
-          });
-          
-          layer.on("mouseout", () => {
-            layer.setStyle({ 
-              weight: 1.5, 
-              fillOpacity: 0.5,
-              color: COLORS.border
-            });
-          });
-          
-          layer.on("click", () => {
-            map.fitBounds(layer.getBounds().pad(0.05), { 
-              animate: true,
-              duration: 0.8
-            });
-          });
+
+// Tính feature có phải đảo nhỏ hay không
+function isTinyFeature(feature) {
+  if (typeof turf === "undefined") return false;
+  try {
+    const area = turf.area(feature); // m²
+    return area < 200000;            // ngưỡng đảo nhỏ, có thể chỉnh
+  } catch {
+    return false;
+  }
+}
+
+// Build map màu sao cho xã kề nhau không trùng màu
+function buildUnitColorMap(fc) {
+  const feats = fc.features || [];
+  const n = feats.length;
+
+  // Gán index cho từng feature
+  feats.forEach((f, i) => {
+    if (!f.properties) f.properties = {};
+    f.properties.__idx = i;
+  });
+
+  // Nếu không có turf thì fallback dùng hash tên như cũ
+  if (typeof turf === "undefined") {
+    const idxToColor = new Map();
+    feats.forEach((f, i) => {
+      const props = f.properties || {};
+      const name = props.ten_xa || props.TEN_XA || `unit_${i}`;
+      // dùng lại hàm hash màu cũ
+      const fill = unitFillByName(name);
+      const colorIndex = UNIT_PALETTE.indexOf(fill);
+      idxToColor.set(i, colorIndex >= 0 ? colorIndex : 0);
+    });
+    return idxToColor;
+  }
+
+  // Ma trận kề nhau bằng booleanIntersects
+  const adj = Array.from({ length: n }, () => []);
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      try {
+        if (turf.booleanIntersects(feats[i], feats[j])) {
+          adj[i].push(j);
+          adj[j].push(i);
         }
-      }).addTo(map);
-      
-      unitsLayer.bringToFront();
+      } catch {
+        // bỏ qua feature lỗi
+      }
     }
+  }
+
+  // Greedy coloring
+  const idxToColor = new Map();
+  for (let i = 0; i < n; i++) {
+    const used = new Set();
+    for (const j of adj[i]) {
+      const cj = idxToColor.get(j);
+      if (cj != null) used.add(cj);
+    }
+    let colorIdx = 0;
+    while (used.has(colorIdx) && colorIdx < UNIT_PALETTE.length) {
+      colorIdx += 1;
+    }
+    if (colorIdx >= UNIT_PALETTE.length) colorIdx = 0;
+    idxToColor.set(i, colorIdx);
+  }
+  return idxToColor;
+}
+
+// Style mặc định cho mỗi xã
+function unitBaseStyle(feature, idxToColor) {
+  const props = feature.properties || {};
+  const idx = props.__idx ?? 0;
+
+  const colorIdx = idxToColor.get(idx) ?? 0;
+  const fillColor = UNIT_PALETTE[colorIdx];
+
+  const tiny = isTinyFeature(feature);
+
+  return {
+    // đảo nhỏ: bỏ stroke, chỉ tô màu
+    color: tiny ? "transparent" : "rgba(28, 169, 250, 0.9)",
+    weight: tiny ? 0 : 0.5,
+    fillColor,
+    fillOpacity: 0.8,
+    lineJoin: "round",
+    lineCap: "round",
+    smoothFactor: 1.8,
+    className: "unit-polygon"
+  };
+}
+
+let unitsLayer = null;
+if (units && units.type === "FeatureCollection") {
+  const unitColorIndex = buildUnitColorMap(units);
+
+  unitsLayer = L.geoJSON(units, {
+    filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
+    style: f => unitBaseStyle(f, unitColorIndex),
+    onEachFeature: (feature, layer) => {
+      const props = feature.properties || {};
+      const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
+      const loai = props.loai || "";
+      const cap = props.cap != null ? `Cấp ${props.cap}` : "";
+      const area = props.dtich_km2 != null ? `${props.dtich_km2} km²` : "";
+      const pop = props.dan_so != null ? `${props.dan_so.toLocaleString("vi-VN")} người` : "";
+
+      const infoLine = [loai, cap].filter(Boolean).join(" • ");
+      const statsLine = [area, pop].filter(Boolean).join(" • ");
+
+      const tiny = isTinyFeature(feature);
+
+      layer.bindTooltip(`
+        <div class="unit-tooltip">
+          <div class="unit-name">${esc(name)}</div>
+          ${infoLine ? `<div class="unit-type">${esc(infoLine)}</div>` : ""}
+          ${statsLine ? `<div class="unit-type">${esc(statsLine)}</div>` : ""}
+        </div>
+      `, {
+        direction: "center",
+        permanent: false,
+        sticky: true,
+        className: "unit-label"
+      });
+
+      layer.on("mouseover", () => {
+        if (tiny) return; // đảo nhỏ giữ nguyên, không vẽ viền
+        layer.setStyle({
+          weight: 1.2,
+          fillOpacity: 0.9
+        });
+      });
+
+      layer.on("mouseout", () => {
+        if (tiny) return;
+        const base = unitBaseStyle(feature, unitColorIndex);
+        layer.setStyle(base);
+      });
+
+      layer.on("click", () => {
+        map.fitBounds(layer.getBounds().pad(0.05), {
+          animate: true,
+          duration: 0.8
+        });
+      });
+    }
+  }).addTo(map);
+
+  unitsLayer.bringToFront();
+
+  // Khi zoom chỉ chỉnh fillOpacity, không đụng stroke để đảo nhỏ luôn không viền
+  map.on("zoomend", () => {
+    const z = map.getZoom();
+    const fo = z < 10 ? 0.6 : 0.85;
+    unitsLayer.setStyle(f => {
+      const base = unitBaseStyle(f, unitColorIndex);
+      base.fillOpacity = fo;
+      return base;
+    });
+  });
+}
+
 
     // Normalize and render
     const userPoints = JSON.parse(localStorage.getItem("qn_user_points") || "[]");
@@ -279,16 +428,25 @@ function render(points) {
     `).join('');
 
     els.spotList.querySelectorAll('.spot-card').forEach(card => {
-      card.onclick = () => {
-        const id = card.dataset.id;
-        const spot = points.find(p => p.id === id);
-        if (spot) {
-          map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: 0.8 });
-          const mk = markers.find(m => m._meta?.id === id);
-          if (mk) mk.openPopup();
-        }
-      };
-    });
+  card.onclick = () => {
+    const id = card.dataset.id;
+    const spot = points.find(p => p.id === id);
+    if (spot) {
+      map.flyTo(
+        [spot.lat, spot.lng],
+        Math.max(map.getZoom(), map.getMinZoom() + 2),
+        { duration: 0.8 }
+      );
+      const mk = markers.find(m => m._meta?.id === id);
+      if (mk) mk.openPopup();
+    }
+
+    // Đóng sidebar sau khi chọn điểm
+    document.body.classList.add("sidebar-collapsed");
+    els.sidebar?.classList.add("collapsed");
+  };
+});
+
   }
 
   // Bottom cards
@@ -312,17 +470,26 @@ function render(points) {
     `).join('');
 
     els.cards.querySelectorAll('.card-mini').forEach(card => {
-      card.onclick = () => {
-        const id = card.dataset.id;
-        const spot = points.find(p => p.id === id);
-        if (spot) {
-          stopAutoScroll();
-          map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: 0.8 });
-          const mk = markers.find(m => m._meta?.id === id);
-          if (mk) mk.openPopup();
-        }
-      };
-    });
+  card.onclick = () => {
+    const id = card.dataset.id;
+    const spot = points.find(p => p.id === id);
+    if (spot) {
+      stopAutoScroll();
+      map.flyTo(
+        [spot.lat, spot.lng],
+        Math.max(map.getZoom(), map.getMinZoom() + 2),
+        { duration: 0.8 }
+      );
+      const mk = markers.find(m => m._meta?.id === id);
+      if (mk) mk.openPopup();
+    }
+
+    // Đóng sidebar luôn cho gọn giao diện
+    document.body.classList.add("sidebar-collapsed");
+    els.sidebar?.classList.add("collapsed");
+  };
+});
+
   }
 
   updateStats(points);
@@ -472,7 +639,7 @@ function buildPopupHTML(p) {
       </div>` : ''}
       ${p.hours ? `<div style="font-size:12px;color:#64748b;margin:-6px 0 10px">${esc(p.hours)}</div>` : ''}
       <div class="popup-actions">
-        <a href="${detailLink}" class="btn-cta">Xem chi tiết</a>
+        <a href="${detailLink}" class="btn-cta btn-ghost">Xem chi tiết</a>
         <a href="${gmaps}" class="btn-cta btn-ghost" target="_blank" rel="noopener">Chỉ đường</a>
         <button class="btn-cta btn-ghost" data-bookmark="${esc(p.id)}">Lưu</button>
       </div>
