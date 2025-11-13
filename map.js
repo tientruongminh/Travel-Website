@@ -1,11 +1,12 @@
-// map.js - OPTIMIZED VERSION
-// Các điểm tối ưu chính:
-// 1. Lazy load Turf.js chỉ khi cần
-// 2. Simplify geometry TRƯỚC khi render
-// 3. Dùng Canvas renderer thay SVG
-// 4. Throttle events
-// 5. Virtual scrolling cho danh sách
-// 6. Debounce search
+// map.js - FULL OPTIMIZED VERSION WITH SMART DENSITY COLORING
+// Features:
+// 1. Graph Coloring - không có 2 xã cạnh nhau cùng màu
+// 2. CSS Markers thay PNG - 6 loại đẹp với animation
+// 3. Labels tên xã trên bản đồ - chỉ hiện khi zoom đủ lớn
+// 4. Tooltip thông tin tổng quan xã khi hover
+// 5. ⭐ SMART DENSITY COLORING - Màu xã thay đổi theo số lượng điểm
+// 6. Canvas renderer, lazy load, debounce, throttle
+// 7. Virtual scrolling, auto scroll
 
 const COLORS = {
   primary: "#0077C8",
@@ -23,31 +24,218 @@ const COLORS = {
   border: "#0f4a43"
 };
 
-const UNIT_PALETTE = [
-  "#ddf542e6", "#00BFA6", "#26C6DA", "#26A69A", 
-  "#66BB6A", "#11c68dff", "#B2F3E1"
+// ====== BẢNG MÀU BASE CHO DENSITY (Base colors) ======
+const DENSITY_BASE_COLORS = [
+  "#4CAF50", // Xanh lá - nhiều điểm
+  "#2196F3", // Xanh dương - nhiều điểm  
+  "#FF9800", // Cam - nhiều điểm
+  "#9C27B0", // Tím - nhiều điểm
+  "#00BCD4", // Cyan - nhiều điểm
+  "#E91E63", // Hồng - nhiều điểm
+  "#8BC34A", // Lime - nhiều điểm
+  "#FFC107", // Vàng - nhiều điểm
+  "#009688", // Teal - nhiều điểm
+  "#673AB7"  // Deep Purple - nhiều điểm
 ];
 
 const CARTO_TILES = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 const CARTO_ATTR = "&copy; OpenStreetMap &copy; CARTO";
 
-// ====== CANVAS RENDERER (10x nhanh hơn SVG) ======
+// ====== CANVAS RENDERER ======
 const canvasRenderer = L.canvas({ padding: 0.5 });
 
-console.log("🟢 Initializing Optimized Map...");
+console.log("🟢 Initializing Map with Smart Density Coloring...");
 const map = L.map("mapid", { 
   zoomControl: true,
-  preferCanvas: true, // CRITICAL: Dùng Canvas thay SVG
+  preferCanvas: true,
   renderer: canvasRenderer
 });
 
 L.tileLayer(CARTO_TILES, { 
   maxZoom: 25, 
   attribution: CARTO_ATTR,
-  updateWhenIdle: true, // Chỉ load tile khi dừng zoom/pan
+  updateWhenIdle: true,
   updateWhenZooming: false,
-  keepBuffer: 2 // Giảm số tile cache
+  keepBuffer: 2
 }).addTo(map);
+
+// ====== INJECT CSS STYLES ======
+if (!document.getElementById('marker-styles')) {
+  const styleEl = document.createElement('style');
+  styleEl.id = 'marker-styles';
+  styleEl.textContent = `
+    /* CSS Marker Animations */
+    .css-marker-wrapper:hover .css-marker {
+      transform: scale(1.15) translateY(-3px);
+      box-shadow: 0 0 0 4px #fff, 
+                  0 8px 24px rgba(0, 0, 0, 0.3),
+                  0 0 0 1px rgba(0,0,0,0.1) inset;
+    }
+
+    .css-marker-wrapper:active .css-marker {
+      transform: scale(1.05) translateY(0);
+    }
+
+    @keyframes marker-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.1); opacity: 0.4; }
+    }
+
+    .css-marker.active::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: inherit;
+      animation: marker-pulse 2s ease-in-out infinite;
+      z-index: -1;
+    }
+
+    /* Label styles - ĐẬM VÀ ĐẸP HƠN */
+    .unit-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a1a1a;
+      text-shadow: 
+        2px 2px 3px rgba(255,255,255,0.95),
+        -2px -2px 3px rgba(255,255,255,0.95),
+        2px -2px 3px rgba(255,255,255,0.95),
+        -2px 2px 3px rgba(255,255,255,0.95),
+        0 0 8px rgba(255,255,255,0.9);
+      pointer-events: none;
+      white-space: nowrap;
+      transition: opacity 0.3s ease;
+      letter-spacing: 0.3px;
+    }
+
+    /* Tooltip styles - REDESIGNED */
+    .unit-tooltip {
+      background: #ffffff;
+      padding: 0;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-width: 260px;
+      max-width: 300px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    .tooltip-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 14px 16px;
+      color: white;
+    }
+
+    .tooltip-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .tooltip-body {
+      padding: 14px 16px;
+    }
+
+    .density-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 8px;
+      color: white;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    .tooltip-info-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px 12px;
+      margin: 12px 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .info-label {
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .info-value {
+      color: #1e293b;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .tooltip-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+      margin: 12px 0;
+    }
+
+    .tooltip-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 10px 8px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .stat-item:hover {
+      transform: translateY(-2px);
+    }
+
+    .stat-tour { 
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    }
+    
+    .stat-service { 
+      background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+    }
+    
+    .stat-event { 
+      background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+    }
+
+    .stat-icon {
+      font-size: 18px;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stat-number {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e293b;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: #64748b;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+  `;
+  document.head.appendChild(styleEl);
+}
 
 // ====== DEBOUNCE & THROTTLE ======
 function debounce(fn, ms) {
@@ -71,24 +259,70 @@ function throttle(fn, ms) {
 // ====== ICON CACHE ======
 const iconCache = new Map();
 
-function makeCircleIcon(imageUrl, size = 44) {
-  const key = `${imageUrl}_${size}`;
+// ====== CSS MARKERS ======
+function makeCSSIcon(category, size = 44) {
+  const key = `${category}_${size}`;
   if (iconCache.has(key)) return iconCache.get(key);
+  
+  const styles = {
+    tour: {
+      gradient: 'linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)',
+      icon: '🏖️',
+      shadow: 'rgba(33, 150, 243, 0.4)'
+    },
+    service: {
+      gradient: 'linear-gradient(135deg, #FFA726 0%, #FB8C00 100%)',
+      icon: '🛍️',
+      shadow: 'rgba(255, 152, 0, 0.4)'
+    },
+    event: {
+      gradient: 'linear-gradient(135deg, #AB47BC 0%, #8E24AA 100%)',
+      icon: '🎉',
+      shadow: 'rgba(156, 39, 176, 0.4)'
+    },
+    eat: {
+      gradient: 'linear-gradient(135deg, #EF5350 0%, #E53935 100%)',
+      icon: '🍜',
+      shadow: 'rgba(244, 67, 54, 0.4)'
+    },
+    stay: {
+      gradient: 'linear-gradient(135deg, #26A69A 0%, #00897B 100%)',
+      icon: '🏨',
+      shadow: 'rgba(0, 150, 136, 0.4)'
+    },
+    play: {
+      gradient: 'linear-gradient(135deg, #66BB6A 0%, #43A047 100%)',
+      icon: '⛵',
+      shadow: 'rgba(76, 175, 80, 0.4)'
+    }
+  };
+  
+  const style = styles[category] || styles.tour;
   
   const icon = L.divIcon({
     html: `
-      <div style="
-        width:${size}px;
-        height:${size}px;
-        border-radius:50%;
-        overflow:hidden;
-        background:linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%);
-        box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(0,119,200,.3);
-      ">
-        <img src="${imageUrl}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy"/>
+      <div class="css-marker-wrapper" style="width:${size}px;height:${size}px">
+        <div class="css-marker" style="
+          width:${size}px;
+          height:${size}px;
+          background:${style.gradient};
+          border-radius:50%;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:${size * 0.5}px;
+          box-shadow: 0 0 0 3px #fff, 
+                      0 4px 12px ${style.shadow},
+                      0 0 0 1px rgba(0,0,0,0.1) inset;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: pointer;
+          position: relative;
+        ">
+          ${style.icon}
+        </div>
       </div>
     `,
-    className: "icon-circle",
+    className: "css-icon-marker",
     iconSize: [size, size],
     iconAnchor: [size / 2, size],
     popupAnchor: [0, -Math.round(size * 0.55)]
@@ -99,12 +333,12 @@ function makeCircleIcon(imageUrl, size = 44) {
 }
 
 const customIcons = {
-  tour: makeCircleIcon("./images/icons/tour.png?v=3", 44),
-  service: makeCircleIcon("./images/icons/service.png?v=3", 44),
-  event: makeCircleIcon("./images/icons/event.png?v=3", 44),
-  eat: makeCircleIcon("./images/icons/eat.png?v=3", 44),
-  stay: makeCircleIcon("./images/icons/stay.png?v=3", 44),
-  play: makeCircleIcon("./images/icons/play.png?v=3", 44)
+  tour: makeCSSIcon("tour", 44),
+  service: makeCSSIcon("service", 44),
+  event: makeCSSIcon("event", 44),
+  eat: makeCSSIcon("eat", 44),
+  stay: makeCSSIcon("stay", 44),
+  play: makeCSSIcon("play", 44)
 };
 
 // ====== STATE ======
@@ -113,6 +347,9 @@ let allPoints = [];
 let current = [];
 let markers = [];
 let turfLoaded = false;
+let labelsLayer = null;
+let unitsStatsMap = new Map(); // Store stats per unit
+let maxPointsPerUnit = 0; // Max số điểm trong 1 xã
 
 const markersLayer = L.layerGroup();
 map.addLayer(markersLayer);
@@ -160,7 +397,6 @@ async function loadTurf() {
 // ====== INIT ======
 async function init() {
   try {
-    // Load song song
     const [geo, spots] = await Promise.all([
       fetch("data/quangninh.geojson?v=3").then(r => r.json()).catch(() => demoBoundaryGeoJSON()),
       fetch("data/spots.json?v=3").then(r => r.json()).catch(() => demoSpots())
@@ -168,13 +404,12 @@ async function init() {
 
     console.log("✅ Boundary & Spots loaded");
 
-    // ====== BOUNDARY - ĐƠN GIẢN HÓA ======
     const boundaryStyle = {
       color: "#004D40",
       weight: 2,
       fillColor: "#CCFFF2",
       fillOpacity: 0.08,
-      renderer: canvasRenderer // Dùng Canvas
+      renderer: canvasRenderer
     };
 
     const boundaryLayer = L.geoJSON(geo, {
@@ -192,13 +427,9 @@ async function init() {
     map.setMaxBounds(qnBounds.pad(0.02));
     map.options.maxBoundsViscosity = 1.0;
 
-    // Throttle drag event
     map.on("drag", throttle(() => {
       map.panInsideBounds(qnBounds, { animate: false });
     }, 100));
-
-    // ====== LOAD UNITS ASYNC - KHÔNG BLOCK MAIN ======
-    loadUnitsAsync();
 
     // Normalize points
     const userPoints = JSON.parse(localStorage.getItem("qn_user_points") || "[]");
@@ -206,6 +437,10 @@ async function init() {
     current = allPoints.slice();
 
     console.log("✅ Map ready. Points:", current.length);
+    
+    // Load units với density coloring
+    loadUnitsAsyncWithDensity();
+    
     render(current);
     wireUI();
     startAutoScroll();
@@ -215,10 +450,324 @@ async function init() {
   }
 }
 
-// ====== LOAD UNITS ASYNC - KHÔNG BLOCK ======
-async function loadUnitsAsync() {
+// ====== GRAPH COLORING ======
+function assignColorsToUnits(geojson) {
+  const features = geojson.features || [];
+  const n = features.length;
+  
+  console.log("🎨 Starting Graph Coloring for", n, "units...");
+  
+  const adjacencyList = buildAdjacencyGraph(features);
+  const colors = new Array(n).fill(-1);
+  
+  for (let i = 0; i < n; i++) {
+    const usedColors = new Set();
+    for (const neighborIdx of adjacencyList[i]) {
+      if (colors[neighborIdx] !== -1) {
+        usedColors.add(colors[neighborIdx]);
+      }
+    }
+    
+    let color = 0;
+    while (usedColors.has(color)) {
+      color++;
+    }
+    
+    colors[i] = color % DENSITY_BASE_COLORS.length;
+  }
+  
+  features.forEach((f, i) => {
+    f.properties = f.properties || {};
+    f.properties.__colorIndex = colors[i];
+  });
+  
+  console.log(`✅ Graph Coloring complete: ${Math.max(...colors) + 1} colors used`);
+  return colors;
+}
+
+function buildAdjacencyGraph(features) {
+  const n = features.length;
+  const adjacencyList = Array.from({ length: n }, () => []);
+  const bboxes = features.map(f => getBBox(f.geometry));
+  
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (bboxesOverlap(bboxes[i], bboxes[j])) {
+        if (sharesBoundary(features[i].geometry, features[j].geometry)) {
+          adjacencyList[i].push(j);
+          adjacencyList[j].push(i);
+        }
+      }
+    }
+  }
+  
+  return adjacencyList;
+}
+
+function getBBox(geometry) {
+  let minX = Infinity, minY = Infinity;
+  let maxX = -Infinity, maxY = -Infinity;
+  
+  const processCoords = (coords) => {
+    if (typeof coords[0] === 'number') {
+      minX = Math.min(minX, coords[0]);
+      maxX = Math.max(maxX, coords[0]);
+      minY = Math.min(minY, coords[1]);
+      maxY = Math.max(maxY, coords[1]);
+    } else {
+      coords.forEach(processCoords);
+    }
+  };
+  
+  processCoords(geometry.coordinates);
+  return { minX, minY, maxX, maxY };
+}
+
+function bboxesOverlap(a, b) {
+  return !(a.maxX < b.minX || b.maxX < a.minX || 
+           a.maxY < b.minY || b.maxY < a.minY);
+}
+
+function sharesBoundary(geom1, geom2) {
+  const coords1 = extractAllCoords(geom1);
+  const coords2 = extractAllCoords(geom2);
+  const threshold = 0.0001;
+  
+  for (const c1 of coords1) {
+    for (const c2 of coords2) {
+      const dist = Math.sqrt(
+        Math.pow(c1[0] - c2[0], 2) + 
+        Math.pow(c1[1] - c2[1], 2)
+      );
+      if (dist < threshold) return true;
+    }
+  }
+  
+  return false;
+}
+
+function extractAllCoords(geometry) {
+  const coords = [];
+  const processCoords = (arr) => {
+    if (typeof arr[0] === 'number') {
+      coords.push(arr);
+    } else {
+      arr.forEach(processCoords);
+    }
+  };
+  processCoords(geometry.coordinates);
+  return coords;
+}
+
+// ====== DENSITY CALCULATIONS WITH BETTER MATCHING ======
+function calculateAllUnitsStats(features, allPoints) {
+  console.log("📊 Calculating density for all units...");
+  
+  unitsStatsMap.clear();
+  maxPointsPerUnit = 0;
+  
+  // Build spatial index if Turf available
+  const useSpatialMatch = window.turf && turfLoaded;
+  
+  features.forEach((feature, idx) => {
+    const props = feature.properties || {};
+    const name = props.ten_xa || props.TEN_XA || `unit_${idx}`;
+    
+    let pointsInUnit = [];
+    
+    if (useSpatialMatch) {
+      // Method 1: Spatial matching (chính xác)
+      try {
+        pointsInUnit = allPoints.filter(p => {
+          const point = turf.point([p.lng, p.lat]);
+          return turf.booleanPointInPolygon(point, feature);
+        });
+      } catch (e) {
+        console.warn(`⚠️ Spatial match failed for ${name}:`, e);
+        pointsInUnit = [];
+      }
+    } else {
+      // Method 2: Fallback - text matching (fuzzy)
+      pointsInUnit = allPoints.filter(p => {
+        const addr = (p.address || '').toLowerCase();
+        const nameLower = name.toLowerCase();
+        
+        // Check exact match
+        if (addr.includes(nameLower)) return true;
+        
+        // Check if address contains unit name words
+        const nameWords = nameLower.split(' ').filter(w => w.length > 2);
+        return nameWords.some(word => addr.includes(word));
+      });
+    }
+    
+    const tour = pointsInUnit.filter(p => p.category === 'tour').length;
+    const service = pointsInUnit.filter(p => p.category === 'service').length;
+    const event = pointsInUnit.filter(p => p.category === 'event').length;
+    
+    const stats = { total: pointsInUnit.length, tour, service, event };
+    unitsStatsMap.set(name, stats);
+    
+    // Track max
+    if (stats.total > maxPointsPerUnit) {
+      maxPointsPerUnit = stats.total;
+    }
+    
+    // Debug log
+    if (stats.total > 0) {
+      console.log(`  ✓ ${name}: ${stats.total} điểm (${tour}T/${service}S/${event}E)`);
+    }
+  });
+  
+  console.log(`📊 Density calculated. Max points per unit: ${maxPointsPerUnit}`);
+  console.log(`📊 Units with points: ${Array.from(unitsStatsMap.values()).filter(s => s.total > 0).length}/${features.length}`);
+}
+
+// ====== DENSITY COLOR CALCULATOR ======
+function getDensityColor(baseColor, pointCount) {
+  if (maxPointsPerUnit === 0) {
+    return { color: baseColor, opacity: 0.5 };
+  }
+  
+  // Tính opacity từ 0.5 (ít điểm) → 0.95 (nhiều điểm) - ĐẬM HƠN
+  const ratio = pointCount / maxPointsPerUnit;
+  const opacity = 0.5 + (ratio * 0.45);
+  
+  return {
+    color: baseColor,
+    opacity: Math.min(Math.max(opacity, 0.5), 0.95)
+  };
+}
+
+function getDensityLabel(pointCount) {
+  if (maxPointsPerUnit === 0) return 'Không có dữ liệu';
+  
+  const ratio = pointCount / maxPointsPerUnit;
+  
+  if (ratio === 0) return 'Chưa có điểm';
+  if (ratio < 0.2) return 'Rất thưa';
+  if (ratio < 0.4) return 'Thưa';
+  if (ratio < 0.6) return 'Trung bình';
+  if (ratio < 0.8) return 'Đông';
+  return 'Rất đông';
+}
+
+function buildUnitTooltipContent(unitName, stats, props) {
+  const densityLabel = getDensityLabel(stats.total);
+  const densityColor = getDensityColor(DENSITY_BASE_COLORS[0], stats.total);
+  
+  // Thông tin từ GeoJSON properties
+  const maXa = props?.ma_xa || 'Đang cập nhật';
+  const dienTich = props?.dtich_km2 ? props.dtich_km2.toFixed(1) : 'N/A';
+  const danSo = props?.dan_so ? props.dan_so.toLocaleString('vi-VN') : 'N/A';
+  
+  return `
+    <div class="unit-tooltip">
+      <div class="tooltip-header">
+        <div class="tooltip-title">${esc(unitName)}</div>
+        <div class="density-indicator" style="background: linear-gradient(135deg, ${densityColor.color}dd, ${densityColor.color});">
+          <span>${densityLabel}</span>
+          <strong style="margin-left: 4px;">${stats.total} điểm</strong>
+        </div>
+      </div>
+      
+      <div class="tooltip-body">
+        <div class="tooltip-info-grid">
+          <span class="info-label">Mã xã</span>
+          <span class="info-value">${esc(maXa)}</span>
+          
+          <span class="info-label">Diện tích</span>
+          <span class="info-value">${dienTich} km²</span>
+          
+          <span class="info-label">Dân số</span>
+          <span class="info-value">${danSo} người</span>
+        </div>
+        
+        ${stats.total > 0 ? `
+          <div class="tooltip-divider"></div>
+          <div class="tooltip-stats">
+            <div class="stat-item stat-tour">
+              <span class="stat-icon">🏖️</span>
+              <span class="stat-number">${stats.tour}</span>
+              <div class="stat-label">Du lịch</div>
+            </div>
+            <div class="stat-item stat-service">
+              <span class="stat-icon">🛍️</span>
+              <span class="stat-number">${stats.service}</span>
+              <div class="stat-label">Sản phẩm</div>
+            </div>
+            <div class="stat-item stat-event">
+              <span class="stat-icon">🎉</span>
+              <span class="stat-number">${stats.event}</span>
+              <div class="stat-label">Sự kiện</div>
+            </div>
+          </div>
+        ` : '<div style="padding: 12px 0; text-align: center; color: #94a3b8; font-size: 13px;">Chưa có dữ liệu điểm</div>'}
+      </div>
+    </div>
+  `;
+}
+
+// ====== LABELS ======
+function updateLabelsVisibility() {
+  const zoom = map.getZoom();
+  const minZoom = map.getMinZoom();
+  const shouldShowLabels = zoom > minZoom + 1.5;
+  
+  if (labelsLayer) {
+    labelsLayer.eachLayer(layer => {
+      const el = layer.getElement();
+      if (el) {
+        el.style.opacity = shouldShowLabels ? '1' : '0';
+      }
+    });
+  }
+}
+
+function createUnitLabels(unitsLayer) {
+  if (labelsLayer) {
+    map.removeLayer(labelsLayer);
+  }
+  
+  labelsLayer = L.layerGroup().addTo(map);
+  
+  unitsLayer.eachLayer(layer => {
+    const feature = layer.feature;
+    const props = feature.properties || {};
+    const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
+    
+    let center;
+    try {
+      if (window.turf && turfLoaded) {
+        const centroid = turf.centroid(feature);
+        center = L.latLng(
+          centroid.geometry.coordinates[1],
+          centroid.geometry.coordinates[0]
+        );
+      } else {
+        center = layer.getBounds().getCenter();
+      }
+    } catch {
+      center = layer.getBounds().getCenter();
+    }
+    
+    const label = L.marker(center, {
+      icon: L.divIcon({
+        className: 'unit-label',
+        html: `<span>${esc(name)}</span>`,
+        iconSize: [0, 0]
+      })
+    });
+    
+    label.addTo(labelsLayer);
+  });
+  
+  updateLabelsVisibility();
+}
+
+// ====== LOAD UNITS WITH DENSITY ======
+async function loadUnitsAsyncWithDensity() {
   try {
-    // Load Turf trước
     await loadTurf();
     
     const units = await fetch("data/quangninh.geojson?v=3")
@@ -229,104 +778,107 @@ async function loadUnitsAsync() {
 
     console.log("✅ Units loaded:", units.features.length);
 
-    // SIMPLIFY CỰC MẠNH - Giảm 90% vertices
     if (window.turf) {
       try {
-        // Lọc đảo nhỏ
         units.features = units.features.filter(f => {
           try {
             const area = turf.area(f);
-            return area > 100000; // Bỏ đảo < 0.1km²
+            return area > 100000;
           } catch {
             return true;
           }
         });
 
-        
+        const simplified = turf.simplify(units, {
+          tolerance: 0.001,
+          highQuality: false
+        });
 
         units.features = simplified.features;
-        console.log("✨ Units simplified aggressively");
+        console.log("✨ Units simplified");
       } catch (e) {
         console.warn("⚠️ Simplify failed:", e);
       }
     }
 
-    // Build color map (chỉ 1 lần)
-    const unitColorIndex = buildUnitColorMap(units);
+    // Calculate density FIRST
+    calculateAllUnitsStats(units.features, allPoints);
 
-    // Render với Canvas
+    // Then assign colors
+    assignColorsToUnits(units);
+
     const unitsLayer = L.geoJSON(units, {
       filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
-      style: f => unitBaseStyle(f, unitColorIndex),
-      renderer: canvasRenderer, // CRITICAL
+      style: (f) => {
+        const props = f.properties || {};
+        const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
+        const colorIndex = props.__colorIndex || 0;
+        const baseColor = DENSITY_BASE_COLORS[colorIndex];
+        
+        // Get stats
+        const stats = unitsStatsMap.get(name) || { total: 0 };
+        const densityColor = getDensityColor(baseColor, stats.total);
+        
+        return {
+          color: "rgba(28, 169, 250, 0.6)",
+          weight: 0.5,
+          fillColor: densityColor.color,
+          fillOpacity: densityColor.opacity,
+          renderer: canvasRenderer
+        };
+      },
+      renderer: canvasRenderer,
       onEachFeature: (feature, layer) => {
         const props = feature.properties || {};
         const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
+        
+        const stats = unitsStatsMap.get(name) || { total: 0, tour: 0, service: 0, event: 0 };
+        
+        // ⭐ PASS GeoJSON properties to tooltip
+        const tooltipContent = buildUnitTooltipContent(name, stats, props);
 
-        // Tooltip đơn giản
-        layer.bindTooltip(`<div class="unit-tooltip"><strong>${esc(name)}</strong></div>`, {
+        layer.bindTooltip(tooltipContent, {
           direction: "center",
           permanent: false,
-          sticky: true
+          sticky: true,
+          className: 'custom-tooltip'
         });
 
-        // Throttle hover events
         layer.on("mouseover", throttle(() => {
           layer.setStyle({
-            weight: 1.5,
-            fillOpacity: 0.9
+            weight: 2,
+            fillOpacity: Math.min((layer.options.fillOpacity || 0.5) + 0.2, 1),
+            color: "#004D40"
           });
         }, 50));
 
         layer.on("mouseout", throttle(() => {
-          const base = unitBaseStyle(feature, unitColorIndex);
-          layer.setStyle(base);
+          const colorIndex = props.__colorIndex || 0;
+          const baseColor = DENSITY_BASE_COLORS[colorIndex];
+          const densityColor = getDensityColor(baseColor, stats.total);
+          
+          layer.setStyle({
+            color: "rgba(28, 169, 250, 0.6)",
+            weight: 0.5,
+            fillColor: densityColor.color,
+            fillOpacity: densityColor.opacity
+          });
         }, 50));
       }
     }).addTo(map);
 
     unitsLayer.bringToFront();
+    
+    createUnitLabels(unitsLayer);
+    map.on('zoomend', updateLabelsVisibility);
 
   } catch (err) {
     console.warn("⚠️ Units load failed:", err);
   }
 }
 
-// ====== COLOR MAP - SIMPLIFIED ======
-function buildUnitColorMap(fc) {
-  const feats = fc.features || [];
-  const idxToColor = new Map();
-  
-  feats.forEach((f, i) => {
-    const props = f.properties || {};
-    const name = props.ten_xa || props.TEN_XA || `unit_${i}`;
-    let h = 0;
-    for (let j = 0; j < name.length; j++) {
-      h = (h * 31 + name.charCodeAt(j)) >>> 0;
-    }
-    idxToColor.set(i, h % UNIT_PALETTE.length);
-  });
-  
-  return idxToColor;
-}
-
-function unitBaseStyle(feature, idxToColor) {
-  const props = feature.properties || {};
-  const idx = props.__idx ?? 0;
-  const colorIdx = idxToColor.get(idx) ?? 0;
-
-  return {
-    color: "rgba(28, 169, 250, 0.6)",
-    weight: 0.5,
-    fillColor: UNIT_PALETTE[colorIdx],
-    fillOpacity: 0.7,
-    renderer: canvasRenderer
-  };
-}
-
-// ====== RENDER - OPTIMIZED ======
+// ====== RENDER ======
 function render(points) {
-  // Giới hạn số marker hiển thị
   const MAX_MARKERS = 200;
   const displayPoints = points.slice(0, MAX_MARKERS);
   
@@ -348,17 +900,15 @@ function render(points) {
     markers.push(m);
   });
 
-  // Render UI - Virtual scrolling cho danh sách lớn
   renderSidebarList(points);
   renderBottomCards(displayPoints);
   updateStats(points);
 }
 
-// ====== VIRTUAL SCROLLING SIDEBAR ======
 function renderSidebarList(points) {
   if (!els.spotList) return;
   
-  const BATCH_SIZE = 50; // Chỉ render 50 item đầu
+  const BATCH_SIZE = 50;
   const visible = points.slice(0, BATCH_SIZE);
   
   els.spotList.innerHTML = visible.map(p => `
@@ -389,7 +939,6 @@ function renderSidebarList(points) {
   });
 }
 
-// ====== BOTTOM CARDS - LAZY LOAD IMAGES ======
 function renderBottomCards(points) {
   if (!els.cards) return;
   
@@ -429,10 +978,7 @@ function renderBottomCards(points) {
 
 function updateStats(points) {
   const total = points.length;
-  const tour = points.filter(p => {
-    const c = (p.category || "").toLowerCase();
-    return c === "tour";
-  }).length;
+  const tour = points.filter(p => (p.category || "").toLowerCase() === "tour").length;
   const svc = points.filter(p => {
     const c = (p.category || "").toLowerCase();
     return c === "service" || c === "svc";
@@ -476,7 +1022,6 @@ if (els.cards) {
 
 // ====== UI WIRING ======
 function wireUI() {
-  // Search với debounce
   els.keyword?.addEventListener("input", debounce(() => {
     const kw = els.keyword.value.trim().toLowerCase();
     const activeBtn = document.querySelector('.pill.active');
@@ -488,15 +1033,13 @@ function wireUI() {
       (p.desc || "").toLowerCase().includes(kw)
     );
     render(current);
-  }, 300)); // Debounce 300ms
+  }, 300));
 
-  // Sidebar toggle
   els.sidebarToggle?.addEventListener("click", () => {
     document.body.classList.toggle("sidebar-collapsed");
     els.sidebar?.classList.toggle("collapsed");
   });
 
-  // Filter pills
   document.querySelectorAll('.pill').forEach(pill => {
     pill.addEventListener('click', () => {
       document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
@@ -512,7 +1055,6 @@ function wireUI() {
     });
   });
 
-  // Escape key
   window.addEventListener('keydown', e => {
     if (e.key === 'Escape' && els.sidebar && !els.sidebar.classList.contains('collapsed')) {
       els.sidebar.classList.add('collapsed');
@@ -635,10 +1177,6 @@ function esc(s) {
   return (s || "").toString().replace(/[&<>"']/g, m => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[m]));
-}
-
-function setText(el, v) {
-  if (el) el.textContent = v;
 }
 
 function demoBoundaryGeoJSON() {
