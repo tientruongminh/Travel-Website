@@ -865,12 +865,35 @@ async function addProvinceMask(unitsGeo) {
     // Add centered flag/logo inside the province
     try {
       let centerLatLng = null;
-      if (provinceUnion && window.turf) {
-        try {
-          const c = turf.centroid(provinceUnion);
-          centerLatLng = L.latLng(c.geometry.coordinates[1], c.geometry.coordinates[0]);
-        } catch (e) {}
+
+      // Prefer using the centroid of the unit named 'Kỳ Thượng' (if present)
+      try {
+        if (unitsGeo && unitsGeo.features && unitsGeo.features.length) {
+          const preferredRegex = /k[yỳ][\s_-]*thuong/i;
+          const match = unitsGeo.features.find(f => {
+            const p = f.properties || {};
+            const name = (p.ten_xa || p.TEN_XA || p.name || '').toString();
+            return preferredRegex.test(name);
+          });
+          if (match && window.turf) {
+            try {
+              const c = turf.centroid(match);
+              centerLatLng = L.latLng(c.geometry.coordinates[1], c.geometry.coordinates[0]);
+            } catch (e) { /* ignore */ }
+          }
+        }
+      } catch (e) { /* ignore */ }
+
+      // Fallback: province centroid or bbox center or map center
+      if (!centerLatLng) {
+        if (provinceUnion && window.turf) {
+          try {
+            const c = turf.centroid(provinceUnion);
+            centerLatLng = L.latLng(c.geometry.coordinates[1], c.geometry.coordinates[0]);
+          } catch (e) { centerLatLng = null; }
+        }
       }
+
       if (!centerLatLng) {
         // fallback: use bounding box center of unitsGeo
         try {
@@ -881,16 +904,17 @@ async function addProvinceMask(unitsGeo) {
           }
         } catch (e) {
           // last fallback: map center
-          try { centerLatLng = map.getBounds().getCenter(); } catch (e) {}
+          try { centerLatLng = map.getBounds().getCenter(); } catch (e) { centerLatLng = null; }
         }
       }
 
       if (centerLatLng) {
-        // ensure a dedicated pane for the flag so it sits above other layers
+        // ensure a dedicated pane for the flag so it sits above tiles but below popups/tooltips
         if (!map.getPane('provinceFlagPane')) {
           map.createPane('provinceFlagPane');
           const fp = map.getPane('provinceFlagPane');
-          fp.style.zIndex = 1500; // above most overlays
+          // z-index chosen to be above tiles (200–300) but below popups/tooltips (650+)
+          fp.style.zIndex = 600;
           fp.style.pointerEvents = 'none';
         }
 
@@ -899,8 +923,9 @@ async function addProvinceMask(unitsGeo) {
           className: 'province-flag-icon',
           html: flagHtml,
           iconSize: [112, 112],
-          // anchor lower than center so the image appears slightly higher than exact centroid
-          iconAnchor: [56, 72]
+          // increase the anchor Y so the image appears higher above the chosen centroid
+          // larger Y -> anchor point lower in image -> image is placed higher on map
+          iconAnchor: [56, 140]
         });
 
         // remove existing flag if present
@@ -1001,28 +1026,44 @@ async function loadUnitsAsyncWithDensity() {
 
     let __hoverTimeout = null;
 
-    layer.on("mouseover", () => {
+    layer.on("mouseover", (e) => {
       if (__hoverTimeout) { clearTimeout(__hoverTimeout); __hoverTimeout = null; }
 
-      // Keep dark green on hover as well (no color shift to density palette)
+      // Save original style so we can restore it on mouseout
+      if (!layer.__origStyle) {
+        const o = layer.options || {};
+        layer.__origStyle = {
+          color: o.color || "rgba(148, 163, 184, 1)",
+          weight: (o.weight != null) ? o.weight : 0.6,
+          fillColor: o.fillColor || "#006A2E",
+          fillOpacity: (o.fillOpacity != null) ? o.fillOpacity : 1
+        };
+      }
+
+      // Highlight only this unit
       layer.setStyle({
         weight: 2,
         color: "rgba(20, 60, 30, 1)",
-        fillColor: "#006A2E",
+        fillColor: "#FFD54F", // highlight color (can be adjusted)
         fillOpacity: 1
       });
-      // dim/adjust outside mask to give stronger focus on the hovered unit / province
+
+      // Bring hovered layer above others for visibility
+      try { layer.bringToFront(); } catch (e) {}
+
+      // Slightly adjust outside mask to emphasize the hovered unit's area
       try { if (provinceMaskLayer) provinceMaskLayer.setStyle({ fillColor: '#BFE6FF' }); } catch (e) {}
     });
 
     layer.on("mouseout", () => {
       __hoverTimeout = setTimeout(() => {
-        // restore style
+        // restore original style
+        const s = layer.__origStyle || { color: "rgba(148, 163, 184, 1)", weight: 0.6, fillColor: "#006A2E", fillOpacity: 1 };
         layer.setStyle({
-          color: "rgba(148, 163, 184, 1)",
-          weight: 0.6,
-          fillColor: "#006A2E",
-          fillOpacity: 1
+          color: s.color,
+          weight: s.weight,
+          fillColor: s.fillColor,
+          fillOpacity: s.fillOpacity
         });
         __hoverTimeout = null;
       }, 120);

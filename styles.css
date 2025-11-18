@@ -83,7 +83,7 @@ body.sidebar-collapsed #sidebar {
 
 .sb-logo {
   width: 1000px;
-  height: 80px;
+  height: 110px;
   right: 8px;
   overflow: hidden;
   
@@ -113,7 +113,7 @@ body.sidebar-collapsed #sidebar {
 
 .sb-title h1 {
   font-size: 20px;
-  color: var(--yn-teal);
+  color: #E3002C;
   font-weight: 800;
   letter-spacing: .2px;
   line-height: 1.2;
@@ -540,6 +540,18 @@ body.sidebar-collapsed .fab-right {
   border-radius: 50%;
   box-shadow: 0 6px 18px rgba(2, 6, 23, 0.18);
   border: 4px solid rgba(255,255,255,0.9);
+}
+
+/* Hide Leaflet default zoom control if present */
+.leaflet-control-zoom.leaflet-bar.leaflet-control {
+  display: none !important;
+}
+
+/* Make the province flag blend into the map (less occlusive) */
+.province-flag-icon img {
+  opacity: 0.92;
+  mix-blend-mode: multiply;
+  pointer-events: none;
 }
 
 .burger-white::before {
@@ -1689,4 +1701,14 @@ body.sidebar-collapsed .fab-right {
 
 .unit-tooltip .stat-event {
   background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+}
+
+/* Mobile: hide floating controls (FAB, bottom buttons) while sidebar is open */
+@media (max-width: 768px) {
+  body:not(.sidebar-collapsed) .fab-right,
+  body:not(.sidebar-collapsed) .sb-bottom {
+    display: none !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+  }
 }
