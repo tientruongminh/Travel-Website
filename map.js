@@ -116,44 +116,61 @@ if (!document.getElementById('marker-styles')) {
     .unit-tooltip {
       background: #ffffff;
       padding: 0;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      min-width: 260px;
-      max-width: 300px;
+      min-width: 160px;
+      max-width: 220px;
       border: 1px solid rgba(0, 0, 0, 0.06);
       overflow: hidden;
+      font-size: 12px;
+      position: relative; /* allow absolutely-positioned logo */
+    }
+
+    /* Small round logo shown in the top-right corner of unit tooltip */
+    .unit-tooltip .popup-logo {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255,255,255,0.9);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+      z-index: 4;
+      pointer-events: none;
+      background: white;
     }
 
     .tooltip-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 14px 16px;
+      background: linear-gradient(135deg, #0ea5e9 0%, #0f766e 100%);
+      padding: 8px 10px;
       color: white;
     }
 
     .tooltip-title {
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 700;
       margin: 0;
-      line-height: 1.3;
+      line-height: 1.2;
     }
 
     .tooltip-body {
-      padding: 14px 16px;
+      padding: 8px 10px;
     }
 
     .density-indicator {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 12px;
-      border-radius: 20px;
+      padding: 4px 8px;
+      border-radius: 16px;
       font-size: 11px;
       font-weight: 600;
-      margin-top: 8px;
+      margin-top: 6px;
       color: white;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.14);
     }
 
     .tooltip-info-grid {
@@ -350,6 +367,9 @@ let turfLoaded = false;
 let labelsLayer = null;
 let unitsStatsMap = new Map(); // Store stats per unit
 let maxPointsPerUnit = 0; // Max số điểm trong 1 xã
+// Province mask & flag markers (kept global so we can update on hover)
+let provinceMaskLayer = null;
+let provinceFlagMarker = null;
 
 const markersLayer = L.layerGroup();
 map.addLayer(markersLayer);
@@ -405,9 +425,11 @@ async function init() {
     console.log("✅ Boundary & Spots loaded");
 
     const boundaryStyle = {
-      color: "#004D40",
-      weight: 2,
-      fillColor: "#CCFFF2",
+      // Remove visible province stroke (make transparent)
+      color: "transparent",
+      weight: 0,
+      // Bên trong tỉnh màu xanh lá logo (nhạt)
+      fillColor: "#00923F",
       fillOpacity: 0.08,
       renderer: canvasRenderer
     };
@@ -663,6 +685,7 @@ function buildUnitTooltipContent(unitName, stats, props) {
   
   return `
     <div class="unit-tooltip">
+      <img class="popup-logo" src="images/logo_doan.png" alt="Logo Đoàn" />
       <div class="tooltip-header">
         <div class="tooltip-title">${esc(unitName)}</div>
         <div class="density-indicator" style="background: linear-gradient(135deg, ${densityColor.color}dd, ${densityColor.color});">
@@ -765,6 +788,135 @@ function createUnitLabels(unitsLayer) {
   updateLabelsVisibility();
 }
 
+// ====== PROVINCE MASK (darken area outside province) ======
+async function addProvinceMask(unitsGeo) {
+  try {
+    if (!unitsGeo || !unitsGeo.features || unitsGeo.features.length === 0) return;
+    if (!window.turf) await loadTurf();
+
+    // world polygon (large rectangle)
+    const world = turf.polygon([[[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]]]);
+
+    // union all unit features into a single geometry (may be heavy for many features)
+    let provinceUnion = unitsGeo.features[0];
+    for (let i = 1; i < unitsGeo.features.length; i++) {
+      try {
+        provinceUnion = turf.union(provinceUnion, unitsGeo.features[i]);
+      } catch (e) {
+        // union may fail on some geometries; continue
+      }
+    }
+
+    let mask = null;
+    try {
+      mask = turf.difference(world, provinceUnion || unitsGeo.features[0]);
+    } catch (e) {
+      console.warn('⚠️ province mask difference failed:', e);
+    }
+
+    // Fallback: if difference failed, create a MultiPolygon mask made from world minus holes
+    if (!mask) {
+      // construct mask as world polygon but leave coordinates of province as holes
+      const holes = [];
+      unitsGeo.features.forEach(f => {
+        if (!f.geometry) return;
+        if (f.geometry.type === 'Polygon') {
+          holes.push(f.geometry.coordinates[0]);
+        } else if (f.geometry.type === 'MultiPolygon') {
+          f.geometry.coordinates.forEach(ring => holes.push(ring[0]));
+        }
+      });
+
+      // Build a multi-polygon where each hole becomes a polygon in the MultiPolygon
+      mask = {
+        type: 'Feature',
+        geometry: {
+          type: 'MultiPolygon',
+          coordinates: holes.map(h => [h])
+        }
+      };
+    }
+
+    // create pane for mask if not exists
+    if (!map.getPane('provinceMaskPane')) {
+      map.createPane('provinceMaskPane');
+      const p = map.getPane('provinceMaskPane');
+      p.style.zIndex = 350; // above tiles (200) but below overlay (default 400)
+      p.style.pointerEvents = 'none';
+    }
+
+    // add mask layer (non-interactive)
+    provinceMaskLayer = L.geoJSON(mask, {
+      pane: 'provinceMaskPane',
+      style: {
+        color: 'transparent',
+        weight: 0,
+        fillColor: '#D3ECFF',
+        fillOpacity: 1,
+        fillRule: 'evenodd'
+      },
+      interactive: false
+    }).addTo(map);
+
+    // Ensure mask is behind other overlays in its pane
+    try { maskLayer.bringToBack(); } catch (e) {}
+
+    console.log('✅ Province mask added');
+    // Add centered flag/logo inside the province
+    try {
+      let centerLatLng = null;
+      if (provinceUnion && window.turf) {
+        try {
+          const c = turf.centroid(provinceUnion);
+          centerLatLng = L.latLng(c.geometry.coordinates[1], c.geometry.coordinates[0]);
+        } catch (e) {}
+      }
+      if (!centerLatLng) {
+        // fallback: use bounding box center of unitsGeo
+        try {
+          if (unitsGeo && unitsGeo.features && unitsGeo.features.length) {
+            const bb = turf.bbox(unitsGeo);
+            const center = [(bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2];
+            centerLatLng = L.latLng(center[1], center[0]);
+          }
+        } catch (e) {
+          // last fallback: map center
+          try { centerLatLng = map.getBounds().getCenter(); } catch (e) {}
+        }
+      }
+
+      if (centerLatLng) {
+        // ensure a dedicated pane for the flag so it sits above other layers
+        if (!map.getPane('provinceFlagPane')) {
+          map.createPane('provinceFlagPane');
+          const fp = map.getPane('provinceFlagPane');
+          fp.style.zIndex = 1500; // above most overlays
+          fp.style.pointerEvents = 'none';
+        }
+
+        const flagHtml = `<img src="images/logo_to_quoc.png" alt="Cờ Tổ quốc"/>`;
+        const flagIcon = L.divIcon({
+          className: 'province-flag-icon',
+          html: flagHtml,
+          iconSize: [112, 112],
+          // anchor lower than center so the image appears slightly higher than exact centroid
+          iconAnchor: [56, 72]
+        });
+
+        // remove existing flag if present
+        try { if (provinceFlagMarker) { map.removeLayer(provinceFlagMarker); provinceFlagMarker = null; } } catch(e){}
+
+        provinceFlagMarker = L.marker(centerLatLng, { icon: flagIcon, interactive: false, pane: 'provinceFlagPane' }).addTo(map);
+        try { provinceFlagMarker.bringToFront(); } catch (e) {}
+      }
+    } catch (e) {
+      console.warn('⚠️ add province flag failed:', e);
+    }
+  } catch (err) {
+    console.warn('⚠️ addProvinceMask failed:', err);
+  }
+}
+
 // ====== LOAD UNITS WITH DENSITY ======
 async function loadUnitsAsyncWithDensity() {
   try {
@@ -808,64 +960,81 @@ async function loadUnitsAsyncWithDensity() {
     assignColorsToUnits(units);
 
     const unitsLayer = L.geoJSON(units, {
-      filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
-      style: (f) => {
-        const props = f.properties || {};
-        const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
-        const colorIndex = props.__colorIndex || 0;
-        const baseColor = DENSITY_BASE_COLORS[colorIndex];
-        
-        // Get stats
-        const stats = unitsStatsMap.get(name) || { total: 0 };
-        const densityColor = getDensityColor(baseColor, stats.total);
-        
-        return {
-          color: "rgba(28, 169, 250, 0.6)",
-          weight: 0.5,
-          fillColor: densityColor.color,
-          fillOpacity: densityColor.opacity,
-          renderer: canvasRenderer
-        };
-      },
-      renderer: canvasRenderer,
-      onEachFeature: (feature, layer) => {
-        const props = feature.properties || {};
-        const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
-        
-        const stats = unitsStatsMap.get(name) || { total: 0, tour: 0, service: 0, event: 0 };
-        
-        // ⭐ PASS GeoJSON properties to tooltip
-        const tooltipContent = buildUnitTooltipContent(name, stats, props);
+  filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
+  style: (f) => {
+    const props = f.properties || {};
+    const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
+    const colorIndex = props.__colorIndex || 0;
+    const baseColor = DENSITY_BASE_COLORS[colorIndex];
 
-        layer.bindTooltip(tooltipContent, {
-          direction: "center",
-          permanent: false,
-          sticky: true,
-          className: 'custom-tooltip'
+    const stats = unitsStatsMap.get(name) || { total: 0 };
+    const densityColor = getDensityColor(baseColor, stats.total);
+
+    // lưu lại màu density để dùng khi hover
+    props.__densityColor = densityColor;
+
+    return {
+      // viền nhẹ (giữ màu xám nhạt)
+      color: "rgba(148, 163, 184, 1)",
+      weight: 0.6,
+      // mặc định fill theo màu trong tỉnh (xanh đậm từ đầu)
+      fillColor: "#006A2E",
+      fillOpacity: 1,
+      renderer: canvasRenderer
+    };
+  },
+  renderer: canvasRenderer,
+  onEachFeature: (feature, layer) => {
+    const props = feature.properties || {};
+    const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
+
+    const stats = unitsStatsMap.get(name) || { total: 0, tour: 0, service: 0, event: 0 };
+    const tooltipContent = buildUnitTooltipContent(name, stats, props);
+
+    layer.bindTooltip(tooltipContent, {
+      direction: 'auto',       // let leaflet choose left/right depending on space
+      permanent: false,
+      sticky: true,
+      offset: [110, 0],        // push tooltip further horizontally away from cursor
+      className: 'custom-tooltip'
+    });
+
+    let __hoverTimeout = null;
+
+    layer.on("mouseover", () => {
+      if (__hoverTimeout) { clearTimeout(__hoverTimeout); __hoverTimeout = null; }
+
+      // Keep dark green on hover as well (no color shift to density palette)
+      layer.setStyle({
+        weight: 2,
+        color: "rgba(20, 60, 30, 1)",
+        fillColor: "#006A2E",
+        fillOpacity: 1
+      });
+      // dim/adjust outside mask to give stronger focus on the hovered unit / province
+      try { if (provinceMaskLayer) provinceMaskLayer.setStyle({ fillColor: '#BFE6FF' }); } catch (e) {}
+    });
+
+    layer.on("mouseout", () => {
+      __hoverTimeout = setTimeout(() => {
+        // restore style
+        layer.setStyle({
+          color: "rgba(148, 163, 184, 1)",
+          weight: 0.6,
+          fillColor: "#006A2E",
+          fillOpacity: 1
         });
+        __hoverTimeout = null;
+      }, 120);
+      try { if (provinceMaskLayer) provinceMaskLayer.setStyle({ fillColor: '#D3ECFF' }); } catch (e) {}
+    });
+  }
+}).addTo(map);
 
-        layer.on("mouseover", throttle(() => {
-          layer.setStyle({
-            weight: 2,
-            fillOpacity: Math.min((layer.options.fillOpacity || 0.5) + 0.2, 1),
-            color: "#004D40"
-          });
-        }, 50));
-
-        layer.on("mouseout", throttle(() => {
-          const colorIndex = props.__colorIndex || 0;
-          const baseColor = DENSITY_BASE_COLORS[colorIndex];
-          const densityColor = getDensityColor(baseColor, stats.total);
-          
-          layer.setStyle({
-            color: "rgba(28, 169, 250, 0.6)",
-            weight: 0.5,
-            fillColor: densityColor.color,
-            fillOpacity: densityColor.opacity
-          });
-        }, 50));
-      }
-    }).addTo(map);
+    // Attempt to add a dark mask outside the province so Quảng Ninh stands out
+    try {
+      addProvinceMask(units).catch(() => {});
+    } catch (e) {}
 
     unitsLayer.bringToFront();
     

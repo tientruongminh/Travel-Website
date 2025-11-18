@@ -48,12 +48,8 @@ body {
   width: var(--sidebar-w);
   max-width: 92vw;
 
-  /* Gradient: TL vàng → center xanh non → BR xanh đậm */
-  background:
-    radial-gradient(600px 400px at 0% 0%, rgba(255, 216, 107, .55), transparent 60%),
-    radial-gradient(700px 500px at 50% 35%, rgba(137, 240, 207, .45), transparent 65%),
-    radial-gradient(900px 600px at 100% 100%, rgba(31, 129, 117, .30), transparent 65%),
-    linear-gradient(135deg, #f7fffd 0%, #eefaf7 100%);
+  /* Background set to match requested color */
+  background: #8bc5fc;
   border-right: 1px solid var(--yn-border);
   box-shadow: var(--yn-shadow);
   backdrop-filter: blur(6px);
@@ -88,7 +84,7 @@ body.sidebar-collapsed #sidebar {
 .sb-logo {
   width: 1000px;
   height: 80px;
-  border-radius: 12px;
+  right: 8px;
   overflow: hidden;
   
   background: transparent !important;
@@ -433,15 +429,15 @@ body.sidebar-collapsed #sidebar {
 
 /* ===== BOTTOM BUTTONS ===== */
 .sb-bottom {
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  position: fixed;
+  top: 16px;
+  right: 10px;
+  bottom: auto;
+  display: flex;
   gap: 10px;
-  padding: 10px;
+  padding: 0;
   background: transparent;
+  z-index: 1100;
 }
 
 .btn-primary,
@@ -500,10 +496,12 @@ body.sidebar-collapsed #sidebar {
   top: 16px;
   right: 16px;
   left: auto;
-  background: var(--yn-teal);
+  /* Nền vòng quanh logo: xanh dương đậm */
+  background: #0C2E63;
   color: #fff;
   z-index: 1200;
   transition: all 0.35s ease;
+  box-shadow: 0 10px 28px rgba(12, 46, 99, 0.22);
 }
 
 
@@ -522,6 +520,26 @@ body.sidebar-collapsed .fab-right {
   content: "";
   border-radius: 2px;
   transition: all .25s;
+}
+
+/* Logo inside FAB (replace burger) */
+.fab-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+  border-radius: 50%;
+}
+
+/* Province center flag */
+.province-flag-icon img {
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+  display: block;
+  border-radius: 50%;
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.18);
+  border: 4px solid rgba(255,255,255,0.9);
 }
 
 .burger-white::before {
@@ -554,7 +572,9 @@ body.sidebar-collapsed .fab-right {
   inset: 0 0 var(--rail-h) 0;
   z-index: 1;
   transition: left .3s ease;
+  background: #ffffff; /* nền trắng hoàn toàn */
 }
+
 
 body.sidebar-collapsed #mapid {
   left: 0;
@@ -566,11 +586,7 @@ body.sidebar-collapsed #mapid {
   right: 0;
   bottom: 0;
   height: var(--rail-h);
-  background:
-    radial-gradient(900px 280px at 0% 0%, rgba(255, 216, 107, .45), transparent 60%),
-    radial-gradient(900px 260px at 50% 0%, rgba(137, 240, 207, .38), transparent 65%),
-    radial-gradient(1100px 500px at 100% 100%, rgba(31, 129, 117, .28), transparent 65%),
-    linear-gradient(180deg, #ffffff 0%, #f6fffc 100%);
+  background: #8bc5fc;
   border-top: 1px solid #f1f5f9;
   overflow-x: auto;
   overflow-y: hidden;
@@ -1481,10 +1497,7 @@ body.sidebar-collapsed .fab-right {
   right: 0;
   bottom: 0;
   height: 130px; /* Giảm chiều cao cho gọn */
-  background:
-    radial-gradient(800px 240px at 0% 0%, rgba(255, 216, 107, .35), transparent 60%),
-    radial-gradient(700px 220px at 50% 0%, rgba(137, 240, 207, .35), transparent 65%),
-    linear-gradient(180deg, #ffffff 0%, #f6fffc 100%);
+  background: #8bc5fc;
   border-top: 1px solid #e2e8f0;
   overflow-x: auto;
   display: flex;
@@ -1545,4 +1558,135 @@ body.sidebar-collapsed .fab-right {
   .card .line {
     -webkit-line-clamp: 2;
   }
+}
+/* ===== UNIT TOOLTIP - COMPACT CARD BÊN PHẢI CON TRỎ ===== */
+
+/* Leaflet tooltip wrapper - bỏ nền mặc định, chỉ dùng card bên trong */
+.leaflet-tooltip.custom-tooltip {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* Card chính bên trong tooltip */
+.unit-tooltip {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(15, 118, 110, 0.22);
+  min-width: 210px;
+  max-width: 240px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+}
+
+/* Header nhỏ gọn hơn */
+.unit-tooltip .tooltip-header {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0f766e 100%);
+  padding: 8px 10px;
+  color: #ffffff;
+}
+
+.unit-tooltip .tooltip-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Body nhỏ gọn */
+.unit-tooltip .tooltip-body {
+  padding: 8px 10px;
+}
+
+/* Chip mật độ */
+.unit-tooltip .density-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+  color: #ffffff;
+}
+
+/* Lưới info */
+.unit-tooltip .tooltip-info-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 10px;
+  margin: 8px 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.unit-tooltip .info-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.unit-tooltip .info-value {
+  color: #0f172a;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Gạch chia */
+.unit-tooltip .tooltip-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+  margin: 8px 0;
+}
+
+/* Stats bên dưới, scope trong tooltip để không đụng stats ở sidebar */
+.unit-tooltip .tooltip-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+
+/* Chỉ áp dụng cho stat trong tooltip */
+.unit-tooltip .stat-item {
+  text-align: center;
+  padding: 6px 4px;
+  border-radius: 8px;
+  font-size: 11px;
+}
+
+.unit-tooltip .stat-icon {
+  font-size: 16px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.unit-tooltip .stat-number {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.unit-tooltip .stat-label {
+  font-size: 9px;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* Background theo loại */
+.unit-tooltip .stat-tour {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}
+
+.unit-tooltip .stat-service {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.unit-tooltip .stat-event {
+  background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
 }

@@ -29,7 +29,7 @@
 <body>
   <!-- FAB Toggle Button -->
   <button id="sidebarToggle" class="fab fab-right" aria-label="Mở/đóng menu">
-    <span class="burger-white"></span>
+    <img src="images/logo_doan.png" alt="Logo Đoàn" class="fab-logo" />
   </button>
 
   <!-- Sidebar -->
@@ -58,30 +58,28 @@
 
     <!-- Stats Summary -->
     <!-- Stats Summary - CẬP NHẬT STRUCTURE -->
-<div class="stats">
-  <span class="stat-badge">Tất cả: <b id="stat-all">0</b></span>
-  <span class="stat-badge">Du lịch: <b id="stat-tour">0</b></span>
-  <span class="stat-badge">Sản phẩm: <b id="stat-svc">0</b></span>
-  <span class="stat-badge">Sự kiện: <b id="stat-evt">0</b></span>
-</div>
+
 
     <!-- Spot List -->
     <div class="sb-list" id="spot-list"></div>
 
     <!-- Bottom Buttons -->
-<div class="sb-bottom">
-  <button id="open-explore" class="btn-primary" onclick="location.href='explore.html'">
-    <span class="material-icons">travel_explore</span>
-    Khám phá
-  </button>
-
-  <button id="open-profile" class="btn-ghost" onclick="location.href='profile.html'">
-    <span class="material-icons">account_circle</span>
-    Cá nhân
-  </button>
-</div>
+    <!-- Bottom Buttons (moved out of sidebar to keep fixed to viewport) -->
 
   </aside>
+
+  <!-- Bottom Buttons (viewport-fixed) -->
+  <div class="sb-bottom">
+    <button id="open-explore" class="btn-primary" onclick="location.href='explore.html'">
+      <span class="material-icons">travel_explore</span>
+      Khám phá
+    </button>
+
+    <button id="open-profile" class="btn-ghost" onclick="location.href='profile.html'">
+      <span class="material-icons">account_circle</span>
+      Cá nhân
+    </button>
+  </div>
 
   <!-- Map -->
   <div id="mapid"></div>
