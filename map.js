@@ -1,12 +1,11 @@
 // map.js - FULL OPTIMIZED VERSION WITH SMART DENSITY COLORING
-// Features:
-// 1. Graph Coloring - không có 2 xã cạnh nhau cùng màu
-// 2. CSS Markers thay PNG - 6 loại đẹp với animation
-// 3. Labels tên xã trên bản đồ - chỉ hiện khi zoom đủ lớn
-// 4. Tooltip thông tin tổng quan xã khi hover
-// 5. ⭐ SMART DENSITY COLORING - Màu xã thay đổi theo số lượng điểm
-// 6. Canvas renderer, lazy load, debounce, throttle
-// 7. Virtual scrolling, auto scroll
+// ⚡ PERFORMANCE OPTIMIZATIONS:
+// - Progressive loading (spots → boundary → units)
+// - Deferred rendering (non-critical UI)
+// - RequestAnimationFrame for smooth rendering
+// - Fragment API for fast DOM operations
+// - Async background tasks
+// - Reduced batch sizes
 
 const COLORS = {
   primary: "#0077C8",
@@ -26,16 +25,8 @@ const COLORS = {
 
 // ====== BẢNG MÀU BASE CHO DENSITY (Base colors) ======
 const DENSITY_BASE_COLORS = [
-  "#4CAF50", // Xanh lá - nhiều điểm
-  "#2196F3", // Xanh dương - nhiều điểm  
-  "#FF9800", // Cam - nhiều điểm
-  "#9C27B0", // Tím - nhiều điểm
-  "#00BCD4", // Cyan - nhiều điểm
-  "#E91E63", // Hồng - nhiều điểm
-  "#8BC34A", // Lime - nhiều điểm
-  "#FFC107", // Vàng - nhiều điểm
-  "#009688", // Teal - nhiều điểm
-  "#673AB7"  // Deep Purple - nhiều điểm
+  "#4CAF50", "#2196F3", "#FF9800", "#9C27B0", "#00BCD4",
+  "#E91E63", "#8BC34A", "#FFC107", "#009688", "#673AB7"
 ];
 
 const CARTO_TILES = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
@@ -48,7 +39,11 @@ console.log("🟢 Initializing Map with Smart Density Coloring...");
 const map = L.map("mapid", { 
   zoomControl: true,
   preferCanvas: true,
-  renderer: canvasRenderer
+  renderer: canvasRenderer,
+  zoomAnimation: true,
+  fadeAnimation: true,
+  markerZoomAnimation: true,
+  zoomAnimationThreshold: 4
 });
 
 L.tileLayer(CARTO_TILES, { 
@@ -95,7 +90,7 @@ if (!document.getElementById('marker-styles')) {
       z-index: -1;
     }
 
-    /* Label styles - ĐẬM VÀ ĐẸP HƠN */
+    /* Label styles */
     .unit-label {
       font-size: 13px;
       font-weight: 700;
@@ -112,7 +107,7 @@ if (!document.getElementById('marker-styles')) {
       letter-spacing: 0.3px;
     }
 
-    /* Tooltip styles - REDESIGNED */
+    /* Tooltip styles */
     .unit-tooltip {
       background: #ffffff;
       padding: 0;
@@ -124,10 +119,9 @@ if (!document.getElementById('marker-styles')) {
       border: 1px solid rgba(0, 0, 0, 0.06);
       overflow: hidden;
       font-size: 12px;
-      position: relative; /* allow absolutely-positioned logo */
+      position: relative;
     }
 
-    /* Small round logo shown in the top-right corner of unit tooltip */
     .unit-tooltip .popup-logo {
       position: absolute;
       top: 8px;
@@ -284,22 +278,22 @@ function makeCSSIcon(category, size = 44) {
   const styles = {
     tour: {
       gradient: 'linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)',
-      icon: '🏖️',
-      shadow: 'rgba(33, 150, 243, 0.4)'
+      icon: 'images/icons/tour.png',
+      shadow: 'rgba(2, 3, 3, 0.4)'
     },
     service: {
       gradient: 'linear-gradient(135deg, #FFA726 0%, #FB8C00 100%)',
-      icon: '🛍️',
+      icon: 'images/icons/eat.png',
       shadow: 'rgba(255, 152, 0, 0.4)'
     },
     event: {
       gradient: 'linear-gradient(135deg, #AB47BC 0%, #8E24AA 100%)',
-      icon: '🎉',
+      icon: 'images/icons/event.png',
       shadow: 'rgba(156, 39, 176, 0.4)'
     },
     eat: {
       gradient: 'linear-gradient(135deg, #EF5350 0%, #E53935 100%)',
-      icon: '🍜',
+      icon: 'images/icons/eat.png',
       shadow: 'rgba(244, 67, 54, 0.4)'
     },
     stay: {
@@ -316,26 +310,36 @@ function makeCSSIcon(category, size = 44) {
   
   const style = styles[category] || styles.tour;
   
+  let markerBgStyle = '';
+  let iconInner = '';
+  if (typeof style.icon === 'string' && (style.icon.endsWith('.png') || style.icon.endsWith('.jpg') || style.icon.endsWith('.jpeg') || style.icon.endsWith('.svg') || style.icon.includes('/images/'))) {
+    markerBgStyle = `background-image: url('${style.icon}'); background-size: cover; background-position: center;`;
+    iconInner = '';
+  } else {
+    markerBgStyle = `background: ${style.gradient};`;
+    iconInner = style.icon || '';
+  }
+
   const icon = L.divIcon({
     html: `
       <div class="css-marker-wrapper" style="width:${size}px;height:${size}px">
         <div class="css-marker" style="
           width:${size}px;
           height:${size}px;
-          background:${style.gradient};
+          ${markerBgStyle}
           border-radius:50%;
           display:flex;
           align-items:center;
           justify-content:center;
           font-size:${size * 0.5}px;
-          box-shadow: 0 0 0 3px #fff, 
-                      0 4px 12px ${style.shadow},
+          box-shadow: 0 4px 12px ${style.shadow},
                       0 0 0 1px rgba(0,0,0,0.1) inset;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           cursor: pointer;
           position: relative;
+          overflow: hidden;
         ">
-          ${style.icon}
+          ${iconInner}
         </div>
       </div>
     `,
@@ -365,9 +369,8 @@ let current = [];
 let markers = [];
 let turfLoaded = false;
 let labelsLayer = null;
-let unitsStatsMap = new Map(); // Store stats per unit
-let maxPointsPerUnit = 0; // Max số điểm trong 1 xã
-// Province mask & flag markers (kept global so we can update on hover)
+let unitsStatsMap = new Map();
+let maxPointsPerUnit = 0;
 let provinceMaskLayer = null;
 let provinceFlagMarker = null;
 
@@ -414,21 +417,30 @@ async function loadTurf() {
   });
 }
 
-// ====== INIT ======
+// ====== INIT - PROGRESSIVE LOADING ======
 async function init() {
   try {
-    const [geo, spots] = await Promise.all([
-      fetch("data/quangninh.geojson?v=3").then(r => r.json()).catch(() => demoBoundaryGeoJSON()),
-      fetch("data/spots.json?v=3").then(r => r.json()).catch(() => demoSpots())
-    ]);
+    // PRIORITY 1: Load spots first (critical for UI)
+    const spots = await fetch("data/spots.json?v=3").then(r => r.json()).catch(() => demoSpots());
+    
+    // Normalize and render immediately
+    const userPoints = JSON.parse(localStorage.getItem("qn_user_points") || "[]");
+    allPoints = normalizeSpots(spots).concat(normalizeSpots(userPoints));
+    current = allPoints.slice();
+    
+    console.log("✅ Points loaded:", current.length);
+    render(current);
+    wireUI();
+    startAutoScroll();
 
-    console.log("✅ Boundary & Spots loaded");
+    // PRIORITY 2: Load boundary (needed for map bounds)
+    const geo = await fetch("data/quangninh.geojson?v=3").then(r => r.json()).catch(() => demoBoundaryGeoJSON());
+    
+    console.log("✅ Boundary loaded");
 
     const boundaryStyle = {
-      // Remove visible province stroke (make transparent)
       color: "transparent",
       weight: 0,
-      // Bên trong tỉnh màu xanh lá logo (nhạt)
       fillColor: "#00923F",
       fillOpacity: 0.08,
       renderer: canvasRenderer
@@ -446,26 +458,21 @@ async function init() {
     const fitZoom = map.getBoundsZoom(qnBounds);
     map.setMinZoom(fitZoom + 0.75);
     map.setMaxZoom(fitZoom + 3);
-    map.setMaxBounds(qnBounds.pad(0.02));
-    map.options.maxBoundsViscosity = 1.0;
+    
+    map.setMaxBounds(qnBounds.pad(0.1));
+    map.options.maxBoundsViscosity = 0.5;
 
     map.on("drag", throttle(() => {
-      map.panInsideBounds(qnBounds, { animate: false });
-    }, 100));
-
-    // Normalize points
-    const userPoints = JSON.parse(localStorage.getItem("qn_user_points") || "[]");
-    allPoints = normalizeSpots(spots).concat(normalizeSpots(userPoints));
-    current = allPoints.slice();
-
-    console.log("✅ Map ready. Points:", current.length);
+      // Light constraint - only prevent extreme panning
+      const currentCenter = map.getCenter();
+      if (qnBounds && !qnBounds.pad(0.05).contains(currentCenter)) {
+        const bounded = qnBounds.getCenter();
+        map.panTo(bounded, { animate: false });
+      }
+    }, 150));
     
-    // Load units với density coloring
-    loadUnitsAsyncWithDensity();
-    
-    render(current);
-    wireUI();
-    startAutoScroll();
+    // PRIORITY 3: Load units in background (non-blocking)
+    setTimeout(() => loadUnitsAsyncWithDensity(), 100);
     
   } catch (err) {
     console.error("❌ Init failed:", err);
@@ -581,14 +588,13 @@ function extractAllCoords(geometry) {
   return coords;
 }
 
-// ====== DENSITY CALCULATIONS WITH BETTER MATCHING ======
+// ====== DENSITY CALCULATIONS ======
 function calculateAllUnitsStats(features, allPoints) {
   console.log("📊 Calculating density for all units...");
   
   unitsStatsMap.clear();
   maxPointsPerUnit = 0;
   
-  // Build spatial index if Turf available
   const useSpatialMatch = window.turf && turfLoaded;
   
   features.forEach((feature, idx) => {
@@ -598,7 +604,6 @@ function calculateAllUnitsStats(features, allPoints) {
     let pointsInUnit = [];
     
     if (useSpatialMatch) {
-      // Method 1: Spatial matching (chính xác)
       try {
         pointsInUnit = allPoints.filter(p => {
           const point = turf.point([p.lng, p.lat]);
@@ -609,15 +614,12 @@ function calculateAllUnitsStats(features, allPoints) {
         pointsInUnit = [];
       }
     } else {
-      // Method 2: Fallback - text matching (fuzzy)
       pointsInUnit = allPoints.filter(p => {
         const addr = (p.address || '').toLowerCase();
         const nameLower = name.toLowerCase();
         
-        // Check exact match
         if (addr.includes(nameLower)) return true;
         
-        // Check if address contains unit name words
         const nameWords = nameLower.split(' ').filter(w => w.length > 2);
         return nameWords.some(word => addr.includes(word));
       });
@@ -630,12 +632,10 @@ function calculateAllUnitsStats(features, allPoints) {
     const stats = { total: pointsInUnit.length, tour, service, event };
     unitsStatsMap.set(name, stats);
     
-    // Track max
     if (stats.total > maxPointsPerUnit) {
       maxPointsPerUnit = stats.total;
     }
     
-    // Debug log
     if (stats.total > 0) {
       console.log(`  ✓ ${name}: ${stats.total} điểm (${tour}T/${service}S/${event}E)`);
     }
@@ -651,7 +651,6 @@ function getDensityColor(baseColor, pointCount) {
     return { color: baseColor, opacity: 0.5 };
   }
   
-  // Tính opacity từ 0.5 (ít điểm) → 0.95 (nhiều điểm) - ĐẬM HƠN
   const ratio = pointCount / maxPointsPerUnit;
   const opacity = 0.5 + (ratio * 0.45);
   
@@ -678,7 +677,6 @@ function buildUnitTooltipContent(unitName, stats, props) {
   const densityLabel = getDensityLabel(stats.total);
   const densityColor = getDensityColor(DENSITY_BASE_COLORS[0], stats.total);
   
-  // Thông tin từ GeoJSON properties
   const maXa = props?.ma_xa || 'Đang cập nhật';
   const dienTich = props?.dtich_km2 ? props.dtich_km2.toFixed(1) : 'N/A';
   const danSo = props?.dan_so ? props.dan_so.toLocaleString('vi-VN') : 'N/A';
@@ -788,23 +786,19 @@ function createUnitLabels(unitsLayer) {
   updateLabelsVisibility();
 }
 
-// ====== PROVINCE MASK (darken area outside province) ======
+// ====== PROVINCE MASK ======
 async function addProvinceMask(unitsGeo) {
   try {
     if (!unitsGeo || !unitsGeo.features || unitsGeo.features.length === 0) return;
     if (!window.turf) await loadTurf();
 
-    // world polygon (large rectangle)
     const world = turf.polygon([[[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]]]);
 
-    // union all unit features into a single geometry (may be heavy for many features)
     let provinceUnion = unitsGeo.features[0];
     for (let i = 1; i < unitsGeo.features.length; i++) {
       try {
         provinceUnion = turf.union(provinceUnion, unitsGeo.features[i]);
-      } catch (e) {
-        // union may fail on some geometries; continue
-      }
+      } catch (e) {}
     }
 
     let mask = null;
@@ -814,9 +808,7 @@ async function addProvinceMask(unitsGeo) {
       console.warn('⚠️ province mask difference failed:', e);
     }
 
-    // Fallback: if difference failed, create a MultiPolygon mask made from world minus holes
     if (!mask) {
-      // construct mask as world polygon but leave coordinates of province as holes
       const holes = [];
       unitsGeo.features.forEach(f => {
         if (!f.geometry) return;
@@ -827,7 +819,6 @@ async function addProvinceMask(unitsGeo) {
         }
       });
 
-      // Build a multi-polygon where each hole becomes a polygon in the MultiPolygon
       mask = {
         type: 'Feature',
         geometry: {
@@ -837,15 +828,13 @@ async function addProvinceMask(unitsGeo) {
       };
     }
 
-    // create pane for mask if not exists
     if (!map.getPane('provinceMaskPane')) {
       map.createPane('provinceMaskPane');
       const p = map.getPane('provinceMaskPane');
-      p.style.zIndex = 350; // above tiles (200) but below overlay (default 400)
+      p.style.zIndex = 350;
       p.style.pointerEvents = 'none';
     }
 
-    // add mask layer (non-interactive)
     provinceMaskLayer = L.geoJSON(mask, {
       pane: 'provinceMaskPane',
       style: {
@@ -858,15 +847,14 @@ async function addProvinceMask(unitsGeo) {
       interactive: false
     }).addTo(map);
 
-    // Ensure mask is behind other overlays in its pane
-    try { maskLayer.bringToBack(); } catch (e) {}
+    try { provinceMaskLayer.bringToBack(); } catch (e) {}
 
     console.log('✅ Province mask added');
-    // Add centered flag/logo inside the province
+
+    // Add flag/logo
     try {
       let centerLatLng = null;
 
-      // Prefer using the centroid of the unit named 'Kỳ Thượng' (if present)
       try {
         if (unitsGeo && unitsGeo.features && unitsGeo.features.length) {
           const preferredRegex = /k[yỳ][\s_-]*thuong/i;
@@ -879,12 +867,11 @@ async function addProvinceMask(unitsGeo) {
             try {
               const c = turf.centroid(match);
               centerLatLng = L.latLng(c.geometry.coordinates[1], c.geometry.coordinates[0]);
-            } catch (e) { /* ignore */ }
+            } catch (e) {}
           }
         }
-      } catch (e) { /* ignore */ }
+      } catch (e) {}
 
-      // Fallback: province centroid or bbox center or map center
       if (!centerLatLng) {
         if (provinceUnion && window.turf) {
           try {
@@ -895,7 +882,6 @@ async function addProvinceMask(unitsGeo) {
       }
 
       if (!centerLatLng) {
-        // fallback: use bounding box center of unitsGeo
         try {
           if (unitsGeo && unitsGeo.features && unitsGeo.features.length) {
             const bb = turf.bbox(unitsGeo);
@@ -903,17 +889,14 @@ async function addProvinceMask(unitsGeo) {
             centerLatLng = L.latLng(center[1], center[0]);
           }
         } catch (e) {
-          // last fallback: map center
           try { centerLatLng = map.getBounds().getCenter(); } catch (e) { centerLatLng = null; }
         }
       }
 
       if (centerLatLng) {
-        // ensure a dedicated pane for the flag so it sits above tiles but below popups/tooltips
         if (!map.getPane('provinceFlagPane')) {
           map.createPane('provinceFlagPane');
           const fp = map.getPane('provinceFlagPane');
-          // z-index chosen to be above tiles (200–300) but below popups/tooltips (650+)
           fp.style.zIndex = 600;
           fp.style.pointerEvents = 'none';
         }
@@ -923,12 +906,9 @@ async function addProvinceMask(unitsGeo) {
           className: 'province-flag-icon',
           html: flagHtml,
           iconSize: [112, 112],
-          // increase the anchor Y so the image appears higher above the chosen centroid
-          // larger Y -> anchor point lower in image -> image is placed higher on map
           iconAnchor: [56, 140]
         });
 
-        // remove existing flag if present
         try { if (provinceFlagMarker) { map.removeLayer(provinceFlagMarker); provinceFlagMarker = null; } } catch(e){}
 
         provinceFlagMarker = L.marker(centerLatLng, { icon: flagIcon, interactive: false, pane: 'provinceFlagPane' }).addTo(map);
@@ -945,7 +925,8 @@ async function addProvinceMask(unitsGeo) {
 // ====== LOAD UNITS WITH DENSITY ======
 async function loadUnitsAsyncWithDensity() {
   try {
-    await loadTurf();
+    // Load Turf in background
+    loadTurf().catch(() => {});
     
     const units = await fetch("data/quangninh.geojson?v=3")
       .then(r => r.json())
@@ -955,6 +936,7 @@ async function loadUnitsAsyncWithDensity() {
 
     console.log("✅ Units loaded:", units.features.length);
 
+    // Skip simplification if Turf not ready yet
     if (window.turf) {
       try {
         units.features = units.features.filter(f => {
@@ -974,155 +956,168 @@ async function loadUnitsAsyncWithDensity() {
         units.features = simplified.features;
         console.log("✨ Units simplified");
       } catch (e) {
-        console.warn("⚠️ Simplify failed:", e);
+        console.warn("⚠️ Simplify skipped:", e);
       }
     }
 
-    // Calculate density FIRST
+    // Calculate density (fast operation)
     calculateAllUnitsStats(units.features, allPoints);
 
-    // Then assign colors
+    // Assign colors (fast operation)
     assignColorsToUnits(units);
 
     const unitsLayer = L.geoJSON(units, {
-  filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
-  style: (f) => {
-    const props = f.properties || {};
-    const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
-    const colorIndex = props.__colorIndex || 0;
-    const baseColor = DENSITY_BASE_COLORS[colorIndex];
+      filter: f => ["Polygon", "MultiPolygon"].includes(f.geometry?.type),
+      style: (f) => {
+        const props = f.properties || {};
+        const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
+        const colorIndex = props.__colorIndex || 0;
+        const baseColor = DENSITY_BASE_COLORS[colorIndex];
 
-    const stats = unitsStatsMap.get(name) || { total: 0 };
-    const densityColor = getDensityColor(baseColor, stats.total);
+        const stats = unitsStatsMap.get(name) || { total: 0 };
+        const densityColor = getDensityColor(baseColor, stats.total);
 
-    // lưu lại màu density để dùng khi hover
-    props.__densityColor = densityColor;
+        props.__densityColor = densityColor;
 
-    return {
-      // viền nhẹ (giữ màu xám nhạt)
-      color: "rgba(148, 163, 184, 1)",
-      weight: 0.6,
-      // mặc định fill theo màu trong tỉnh (xanh đậm từ đầu)
-      fillColor: "#006A2E",
-      fillOpacity: 1,
-      renderer: canvasRenderer
-    };
-  },
-  renderer: canvasRenderer,
-  onEachFeature: (feature, layer) => {
-    const props = feature.properties || {};
-    const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
-
-    const stats = unitsStatsMap.get(name) || { total: 0, tour: 0, service: 0, event: 0 };
-    const tooltipContent = buildUnitTooltipContent(name, stats, props);
-
-    layer.bindTooltip(tooltipContent, {
-      direction: 'auto',       // let leaflet choose left/right depending on space
-      permanent: false,
-      sticky: true,
-      offset: [110, 0],        // push tooltip further horizontally away from cursor
-      className: 'custom-tooltip'
-    });
-
-    let __hoverTimeout = null;
-
-    layer.on("mouseover", (e) => {
-      if (__hoverTimeout) { clearTimeout(__hoverTimeout); __hoverTimeout = null; }
-
-      // Save original style so we can restore it on mouseout
-      if (!layer.__origStyle) {
-        const o = layer.options || {};
-        layer.__origStyle = {
-          color: o.color || "rgba(148, 163, 184, 1)",
-          weight: (o.weight != null) ? o.weight : 0.6,
-          fillColor: o.fillColor || "#006A2E",
-          fillOpacity: (o.fillOpacity != null) ? o.fillOpacity : 1
+        return {
+          color: "rgba(148, 163, 184, 1)",
+          weight: 0.6,
+          fillColor: "#006A2E",
+          fillOpacity: 1,
+          renderer: canvasRenderer
         };
-      }
+      },
+      renderer: canvasRenderer,
+      onEachFeature: (feature, layer) => {
+        const props = feature.properties || {};
+        const name = props.ten_xa || props.TEN_XA || "Chưa rõ tên";
 
-      // Highlight only this unit
-      layer.setStyle({
-        weight: 2,
-        color: "rgba(20, 60, 30, 1)",
-        fillColor: "#FFD54F", // highlight color (can be adjusted)
-        fillOpacity: 1
-      });
+        const stats = unitsStatsMap.get(name) || { total: 0, tour: 0, service: 0, event: 0 };
+        const tooltipContent = buildUnitTooltipContent(name, stats, props);
 
-      // Bring hovered layer above others for visibility
-      try { layer.bringToFront(); } catch (e) {}
-
-      // Slightly adjust outside mask to emphasize the hovered unit's area
-      try { if (provinceMaskLayer) provinceMaskLayer.setStyle({ fillColor: '#BFE6FF' }); } catch (e) {}
-    });
-
-    layer.on("mouseout", () => {
-      __hoverTimeout = setTimeout(() => {
-        // restore original style
-        const s = layer.__origStyle || { color: "rgba(148, 163, 184, 1)", weight: 0.6, fillColor: "#006A2E", fillOpacity: 1 };
-        layer.setStyle({
-          color: s.color,
-          weight: s.weight,
-          fillColor: s.fillColor,
-          fillOpacity: s.fillOpacity
+        layer.bindTooltip(tooltipContent, {
+          direction: 'auto',
+          permanent: false,
+          sticky: true,
+          offset: [110, 0],
+          className: 'custom-tooltip'
         });
-        __hoverTimeout = null;
-      }, 120);
-      try { if (provinceMaskLayer) provinceMaskLayer.setStyle({ fillColor: '#D3ECFF' }); } catch (e) {}
-    });
-  }
-}).addTo(map);
 
-    // Attempt to add a dark mask outside the province so Quảng Ninh stands out
-    try {
+        let __hoverTimeout = null;
+
+        layer.on("mouseover", (e) => {
+          if (__hoverTimeout) { clearTimeout(__hoverTimeout); __hoverTimeout = null; }
+
+          if (!layer.__origStyle) {
+            const o = layer.options || {};
+            layer.__origStyle = {
+              color: o.color || "rgba(148, 163, 184, 1)",
+              weight: (o.weight != null) ? o.weight : 0.6,
+              fillColor: o.fillColor || "#006A2E",
+              fillOpacity: (o.fillOpacity != null) ? o.fillOpacity : 1
+            };
+          }
+
+          layer.setStyle({
+            weight: 2,
+            color: "rgba(20, 60, 30, 1)",
+            fillColor: "#FFD54F",
+            fillOpacity: 1
+          });
+
+          try { layer.bringToFront(); } catch (e) {}
+          try { if (provinceMaskLayer) provinceMaskLayer.setStyle({ fillColor: '#BFE6FF' }); } catch (e) {}
+        });
+
+        layer.on("mouseout", () => {
+          __hoverTimeout = setTimeout(() => {
+            const s = layer.__origStyle || { color: "rgba(148, 163, 184, 1)", weight: 0.6, fillColor: "#006A2E", fillOpacity: 1 };
+            layer.setStyle({
+              color: s.color,
+              weight: s.weight,
+              fillColor: s.fillColor,
+              fillOpacity: s.fillOpacity
+            });
+            __hoverTimeout = null;
+          }, 120);
+          try { if (provinceMaskLayer) provinceMaskLayer.setStyle({ fillColor: '#D3ECFF' }); } catch (e) {}
+        });
+      }
+    }).addTo(map);
+
+    // DEFERRED: Only add mask after a delay to avoid blocking initial render
+    setTimeout(() => {
       addProvinceMask(units).catch(() => {});
-    } catch (e) {}
+    }, 500);
 
     unitsLayer.bringToFront();
     
-    createUnitLabels(unitsLayer);
-    map.on('zoomend', updateLabelsVisibility);
+    // DEFERRED: Create labels after a delay
+    setTimeout(() => {
+      createUnitLabels(unitsLayer);
+      map.on('zoomend', updateLabelsVisibility);
+    }, 800);
 
   } catch (err) {
     console.warn("⚠️ Units load failed:", err);
   }
 }
 
-// ====== RENDER ======
+// ====== RENDER - OPTIMIZED WITH RAF ======
 function render(points) {
   const MAX_MARKERS = 200;
   const displayPoints = points.slice(0, MAX_MARKERS);
   
-  markersLayer.clearLayers();
-  markers = [];
+  // Use requestAnimationFrame for smooth rendering
+  requestAnimationFrame(() => {
+    markersLayer.clearLayers();
+    markers = [];
 
-  displayPoints.forEach(p => {
-    const iconKey = p.category || p.type || 'tour';
-    const icon = customIcons[iconKey] || customIcons.tour;
+    displayPoints.forEach(p => {
+      const iconKey = p.category || p.type || 'tour';
+      const icon = customIcons[iconKey] || customIcons.tour;
 
-    const m = L.marker([p.lat, p.lng], { icon });
-    const html = buildPopupHTML(p);
+      const m = L.marker([p.lat, p.lng], { icon });
+      const html = buildPopupHTML(p);
 
-    m.bindPopup(html, { maxWidth: 320, minWidth: 280 });
-    m.on('popupopen', () => attachPopupEvents(p));
-    m._meta = { id: p.id, category: p.category };
+      m.bindPopup(html, { 
+        maxWidth: 320, 
+        minWidth: 280,
+        autoPan: true,
+        autoPanPaddingTopLeft: [10, 60],
+        autoPanPaddingBottomRight: [10, 60]
+      });
+      
+      m.on('popupopen', () => attachPopupEvents(p));
+      m._meta = { id: p.id, category: p.category };
 
-    markersLayer.addLayer(m);
-    markers.push(m);
+      markersLayer.addLayer(m);
+      markers.push(m);
+    });
   });
 
-  renderSidebarList(points);
-  renderBottomCards(displayPoints);
-  updateStats(points);
+  // Defer sidebar and cards rendering
+  setTimeout(() => {
+    renderSidebarList(points);
+    renderBottomCards(displayPoints);
+    updateStats(points);
+  }, 50);
 }
 
 function renderSidebarList(points) {
   if (!els.spotList) return;
   
-  const BATCH_SIZE = 50;
+  const BATCH_SIZE = 30; // Reduced from 50
   const visible = points.slice(0, BATCH_SIZE);
   
-  els.spotList.innerHTML = visible.map(p => `
-    <div class="spot-card" data-id="${esc(p.id)}">
+  // Use fragment for better performance
+  const fragment = document.createDocumentFragment();
+  
+  visible.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'spot-card';
+    div.dataset.id = p.id;
+    div.innerHTML = `
       <img src="${esc(p.thumb || 'images/placeholder.jpg')}" alt="${esc(p.name)}" loading="lazy">
       <div class="spot-info">
         <h4>${esc(p.name)}</h4>
@@ -1131,22 +1126,32 @@ function renderSidebarList(points) {
         </div>
         <p>${esc((p.desc || '').slice(0, 60))}${(p.desc || '').length > 60 ? '...' : ''}</p>
       </div>
-    </div>
-  `).join('');
-
-  els.spotList.querySelectorAll('.spot-card').forEach(card => {
-    card.onclick = () => {
-      const id = card.dataset.id;
-      const spot = points.find(p => p.id === id);
+    `;
+    
+    div.onclick = () => {
+      const spot = points.find(pt => pt.id === p.id);
       if (spot) {
-        map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: 0.8 });
-        const mk = markers.find(m => m._meta?.id === id);
-        if (mk) mk.openPopup();
+        // Quick zoom without heavy animation
+        map.setView([spot.lat, spot.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), {
+          animate: true,
+          duration: 0.5
+        });
+        
+        // Open popup immediately
+        const mk = markers.find(m => m._meta?.id === p.id);
+        if (mk) {
+          setTimeout(() => mk.openPopup(), 100);
+        }
       }
       document.body.classList.add("sidebar-collapsed");
       els.sidebar?.classList.add("collapsed");
     };
+    
+    fragment.appendChild(div);
   });
+  
+  els.spotList.innerHTML = '';
+  els.spotList.appendChild(fragment);
 }
 
 function renderBottomCards(points) {
@@ -1176,9 +1181,17 @@ function renderBottomCards(points) {
       const spot = points.find(p => p.id === id);
       if (spot) {
         stopAutoScroll();
-        map.flyTo([spot.lat, spot.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: 0.8 });
+        
+        // Quick setView instead of flyTo
+        map.setView([spot.lat, spot.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), {
+          animate: true,
+          duration: 0.5
+        });
+        
         const mk = markers.find(m => m._meta?.id === id);
-        if (mk) mk.openPopup();
+        if (mk) {
+          setTimeout(() => mk.openPopup(), 100);
+        }
       }
       document.body.classList.add("sidebar-collapsed");
       els.sidebar?.classList.add("collapsed");
@@ -1286,7 +1299,7 @@ function buildPopupHTML(p) {
     ${mediaHTML}
     <div class="popup-body">
       <div class="popup-title">
-        ${typeIconHTML(p.type)} <span>${esc(p.name)}</span>
+        ${typeIconHTML(p)} <span>${esc(p.name)}</span>
       </div>
       <span class="${badgeClass}">${catLabel(p.category)}</span>
       <p class="popup-desc">${esc(p.desc || '')}</p>
@@ -1330,10 +1343,22 @@ const ICON_SVG = {
   stay: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 7V4H5v3H2v13h2v-2h16v2h2V7h-3z"/></svg>'
 };
 
-function typeIconHTML(type) {
-  const t = (type || '').toLowerCase();
-  const svg = ICON_SVG[t] || ICON_SVG.play;
-  return `<span style="display:inline-flex;align-items:center;color:${COLORS.primary}">${svg}</span>`;
+function typeIconHTML(p) {
+  const cat = ((p && p.category) || (typeof p === 'string' && p) || '').toLowerCase();
+  const typ = ((p && p.type) || '').toLowerCase();
+  let key = 'tour';
+  if (cat === 'event' || typ === 'event') key = 'event';
+  else if (typ === 'eat' || cat === 'service' || typ === 'eat1') key = 'eat';
+  else key = 'tour';
+
+  const iconMap = {
+    eat: 'images/icons/eat.png',
+    event: 'images/icons/event.png',
+    tour: 'images/icons/tour.png'
+  };
+
+  const src = iconMap[key] || iconMap.tour;
+  return `<img src="${src}" alt="${esc(key)}" style="width:22px;height:22px;margin-right:8px;vertical-align:middle;display:inline-block">`;
 }
 
 function typeBadgeClass(type) {

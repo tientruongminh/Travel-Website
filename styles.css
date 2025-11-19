@@ -1705,10 +1705,30 @@ body.sidebar-collapsed .fab-right {
 
 /* Mobile: hide floating controls (FAB, bottom buttons) while sidebar is open */
 @media (max-width: 768px) {
-  body:not(.sidebar-collapsed) .fab-right,
+  /* Hide only the bottom viewport-fixed buttons when sidebar is open; keep the FAB visible */
   body:not(.sidebar-collapsed) .sb-bottom {
     display: none !important;
     pointer-events: none !important;
     opacity: 0 !important;
+  }
+
+  /* Keep the FAB toggle visible and above the sidebar */
+  body:not(.sidebar-collapsed) .fab-right {
+    display: block !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    z-index: 2100 !important; /* above sidebar and sheet handle */
+    right: 16px !important;
+    left: auto !important;
+  }
+
+  /* Keep the bottom sheet handle visible but shifted so it doesn't overlap the FAB */
+  body:not(.sidebar-collapsed) .sheet-handle {
+    position: fixed !important;
+    top: 16px !important;
+    right: 72px !important; /* move it left of the FAB */
+    left: auto !important;
+    transform: none !important;
+    z-index: 2000 !important; /* below FAB */
   }
 }
