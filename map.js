@@ -441,7 +441,7 @@ async function init() {
     const boundaryStyle = {
       color: "transparent",
       weight: 0,
-      fillColor: "#00923F",
+      fillColor: "#1469CF",
       fillOpacity: 0.08,
       renderer: canvasRenderer
     };
@@ -901,13 +901,7 @@ async function addProvinceMask(unitsGeo) {
           fp.style.pointerEvents = 'none';
         }
 
-        const flagHtml = `<img src="images/logo_to_quoc.png" alt="Cờ Tổ quốc"/>`;
-        const flagIcon = L.divIcon({
-          className: 'province-flag-icon',
-          html: flagHtml,
-          iconSize: [112, 112],
-          iconAnchor: [56, 140]
-        });
+        
 
         try { if (provinceFlagMarker) { map.removeLayer(provinceFlagMarker); provinceFlagMarker = null; } } catch(e){}
 
@@ -982,7 +976,7 @@ async function loadUnitsAsyncWithDensity() {
         return {
           color: "rgba(148, 163, 184, 1)",
           weight: 0.6,
-          fillColor: "#006A2E",
+          fillColor: "#1469CF",
           fillOpacity: 1,
           renderer: canvasRenderer
         };
@@ -1431,7 +1425,7 @@ function demoSpots() {
   return [
     {
       id: 'demo1',
-      name: 'Vịnh Hạ Long',
+      namegit : 'Vịnh Hạ Long',
       category: 'tour',
       type: 'play',
       lat: 20.9101,
