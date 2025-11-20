@@ -28,9 +28,15 @@
                                         </head>
                                         <body>
                                           <!-- FAB Toggle Button -->
-                                            <button id="sidebarToggle" class="fab fab-right" aria-label="Mở/đóng menu">
-                                                <img src="images/logo_doan.png" alt="Logo Đoàn" class="fab-logo" />
-                                                  </button>
+                                            <button id="sidebarToggle" class="fab fab-right" aria-label="Mở/đóng menu" style="background:#1469CF;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;border:none;">
+                                              <span style="display:inline-block;width:24px;height:24px;">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                  <rect y="5" width="24" height="2.5" rx="1.25" fill="white"/>
+                                                  <rect y="11" width="24" height="2.5" rx="1.25" fill="white"/>
+                                                  <rect y="17" width="24" height="2.5" rx="1.25" fill="white"/>
+                                                </svg>
+                                              </span>
+                                            </button>
                                                   
                                                     <!-- Sidebar -->
                                                       <aside id="sidebar">
@@ -54,6 +60,8 @@
                                                                                                                                           <button class="pill" data-cat="tour"><i>🏞️</i> Du lịch</button>
                                                                                                                                                 <button class="pill" data-cat="service"><i>🛍️</i> Sản phẩm</button>
                                                                                                                                                       <button class="pill" data-cat="event"><i>🎉</i> Sự kiện</button>
+                                                                                                                                                          <button class="pill" data-cat="food"><i>🍽️</i> Ẩm thực</button>
+                                                                                                                                                            <button class="pill" data-cat="stay"><i>🏨</i> Lưu trú</button>
                                                                                                                                                           </div>
                                                                                                                                                           
                                                                                                                                                               <!-- Stats Summary -->
@@ -61,7 +69,9 @@
                                                                                                                                                                   
                                                                                                                                                                   
                                                                                                                                                                       <!-- Spot List -->
-                                                                                                                                                                          <div class="sb-list" id="spot-list"></div>
+                                                                                                                                                                      <div class="sb-list" id="spot-list">
+                                                                                                                                                                        <div class="sb-loading">Đang tải danh sách...</div>
+                                                                                                                                                                      </div>
                                                                                                                                                                           
                                                                                                                                                                               <!-- Bottom Buttons -->
                                                                                                                                                                                   <!-- Bottom Buttons (moved out of sidebar to keep fixed to viewport) -->
@@ -76,9 +86,9 @@
                                                                                                                                                                                                             </button>
                                                                                                                                                                                                             
                                                                                                                                                                                                                 <button id="open-profile" class="btn-ghost" onclick="location.href='profile.html'">
-                                                                                                                                                                                                                      <span class="material-icons">account_circle</span>
-                                                                                                                                                                                                                            Cá nhân
-                                                                                                                                                                                                                                </button>
+                                                                                                                                                                                                                      <span class="material-icons" style="color:#1469CF">account_circle</span>
+                                                                                                                                                                                                                      <span style="color:#1469CF">Cá nhân</span>
+                                                                                                                                                                                                                            </button>
                                                                                                                                                                                                                                   </div>
                                                                                                                                                                                                                                   
                                                                                                                                                                                                                                     <!-- Map -->

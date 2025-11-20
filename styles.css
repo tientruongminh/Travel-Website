@@ -5,6 +5,26 @@
   box-sizing: border-box;
 }
 
+/* Final: force FAB alignment with sidebar when open, and move to viewport top-left when collapsed */
+body:not(.sidebar-collapsed) .fab-right {
+  position: fixed !important;
+  top: 16px !important;
+  /* sidebar width minus button width (48px) and inner padding (16px) => subtract 64px */
+  left: calc(var(--sidebar-w) - 64px) !important;
+  right: auto !important;
+  z-index: 2200 !important;
+  transition: left .22s cubic-bezier(.2,.9,.2,1);
+}
+
+body.sidebar-collapsed .fab-right {
+  position: fixed !important;
+  top: 16px !important;
+  left: 16px !important;
+  right: auto !important;
+  z-index: 2200 !important;
+}
+
+
 :root {
   --yn-bg: #f4faf9;
   --yn-card: #ffffff;
@@ -45,6 +65,8 @@ body {
 #sidebar {
   position: fixed;
   inset: 0 auto 0 0;
+  overflow-y: auto;
+  position: relative;
   width: var(--sidebar-w);
   max-width: 92vw;
 
@@ -97,10 +119,12 @@ body.sidebar-collapsed #sidebar {
 .sb-logo img {
   display: block;
   background: transparent !important;
-  max-height: 64px;
-  width: 200px;
-  height: 70px;
-  transform: scale(2.4);   /* tăng 1.2–1.5 lần */
+  /* Keep the full logo visible: slightly larger to better fill the header */
+  max-height: 92px;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  transform: none;
   transform-origin: center;
   object-fit: contain;
  
@@ -176,7 +200,7 @@ body.sidebar-collapsed #sidebar {
 }
 
 .sb-search .material-icons {
-  color: var(--yn-teal);
+  color: #1469CF;
   font-size: 20px;
 }
 
@@ -201,21 +225,21 @@ body.sidebar-collapsed #sidebar {
   padding: 8px 16px 10px;
   margin: 0 12px 8px;
   border-radius: 14px;
-  background:
-    radial-gradient(500px 140px at 15% 0%, rgba(255, 216, 107, .28), transparent 60%),
-    linear-gradient(140deg, #f7fffd 0%, #eefaf7 100%);
-  border: 1px solid var(--yn-border);
+    background:
+      radial-gradient(500px 140px at 15% 0%, rgba(20, 105, 207, 0.08), transparent 60%),
+      linear-gradient(140deg, #f3f8fd 0%, #eaf3fb 100%);
+    border: 1px solid #d0e3fa;
 }
 
 .pill {
-  border: 1px solid rgba(33, 163, 154, .18);
+  border: 1px solid #b3d3f7;
   cursor: pointer;
   white-space: nowrap;
   padding: 8px 12px;
   font-weight: 700;
   font-size: 13px;
-  color: var(--yn-teal);
-  background: #e7fbf6;
+  color: #1469CF;
+  background: #f0f6fd;
   border-radius: 999px;
   transition: all .15s;
   display: inline-flex;
@@ -230,10 +254,10 @@ body.sidebar-collapsed #sidebar {
 
 .pill.active {
   background:
-    radial-gradient(220px 80px at 30% 20%, rgba(255, 216, 107, .35), transparent 60%),
-    linear-gradient(145deg, var(--yn-teal) 0%, var(--yn-teal-2) 100%);
-  color: #fff;
-  border-color: transparent;
+    radial-gradient(220px 80px at 30% 20%, rgba(20, 105, 207, 0.12), transparent 60%),
+    linear-gradient(145deg, #e3f0fd 0%, #cbe2fa 100%);
+  color: #1469CF;
+  border-color: #b3d3f7;
   box-shadow: 0 10px 24px rgba(31, 129, 117, .25);
 }
 
@@ -345,8 +369,33 @@ body.sidebar-collapsed #sidebar {
 /* ===== LIST ===== */
 .sb-list {
   padding: 8px 12px 120px;
-  overflow: auto;
-  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - 220px);
+  flex: 1 1 auto;
+  scrollbar-width: thin;
+  scrollbar-color: #1469CF #e3f0fd;
+}
+
+.sb-list::-webkit-scrollbar {
+  width: 8px;
+  background: #e3f0fd;
+  border-radius: 999px;
+}
+.sb-list::-webkit-scrollbar-thumb {
+  background: #1469CF;
+  border-radius: 999px;
+}
+.sb-list::-webkit-scrollbar-track {
+  background: #e3f0fd;
+  border-radius: 999px;
+}
+
+.sb-list .sb-loading {
+  padding: 18px 12px;
+  color: #1e3a8a;
+  font-weight: 700;
+  text-align: center;
 }
 
 .spot-card {
@@ -399,16 +448,18 @@ body.sidebar-collapsed #sidebar {
   font-size: 11px;
   font-weight: 600;
   margin-bottom: 6px;
+  background: #e3f0fd;
+  color: #1469CF;
 }
 
 .spot-meta[data-cat="tour"] {
-  background: #d7efec;
-  color: #125e55;
+  background: #e3f0fd;
+  color: #1469CF;
 }
 
 .spot-meta[data-cat="service"] {
-  background: #fef3c7;
-  color: #92400e;
+  background: #e3f0fd;
+  color: #1469CF;
 }
 
 .spot-meta[data-cat="event"] {
@@ -492,10 +543,34 @@ body.sidebar-collapsed #sidebar {
 }
 
 .fab-right {
-  position: fixed;
+  position: absolute;
   top: 16px;
   right: 16px;
   left: auto;
+  z-index: 1100;
+    /* Sidebar custom scrollbar */
+      scrollbar-width: thin;
+      scrollbar-color: #1469CF #e3f0fd;
+      width: 8px;
+      background: #e3f0fd;
+      border-radius: 999px;
+      background: #1469CF;
+      border-radius: 999px;
+      background: #e3f0fd;
+      border-radius: 999px;
+    /* Custom scrollbar for sidebar */
+    scrollbar-width: thin;
+    scrollbar-color: #1469CF #e3f0fd;
+    height: 8px;
+    width: 8px;
+    background: #e3f0fd;
+    border-radius: 999px;
+  }
+    background: #1469CF;
+    border-radius: 999px;
+  }
+    background: #e3f0fd;
+    border-radius: 999px;
   /* Nền vòng quanh logo: xanh dương đậm */
   background: #0C2E63;
   color: #fff;
@@ -609,6 +684,44 @@ body.sidebar-collapsed #mapid {
   transition: all .3s ease;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f8fafc;
+
+/* Ensure the sidebar toggle sits inside the sidebar's top-right when the sidebar is open */
+#sidebar .fab-right {
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  left: auto !important;
+  z-index: 1100 !important;
+}
+
+/* When the sidebar is collapsed, the FAB returns to a fixed position on the viewport */
+body.sidebar-collapsed .fab-right {
+  position: fixed !important;
+  left: 16px !important;
+  right: auto !important;
+  top: 16px !important;
+}
+
+/* Explicit sidebar scrollbar styling placed late to ensure it overrides globals */
+#sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: #1469CF #e3f0fd;
+}
+
+#sidebar::-webkit-scrollbar {
+  width: 8px;
+  background: #e3f0fd;
+}
+
+#sidebar::-webkit-scrollbar-thumb {
+  background: #1469CF;
+  border-radius: 999px;
+}
+
+#sidebar::-webkit-scrollbar-track {
+  background: #e3f0fd;
+  border-radius: 999px;
+}
 }
 
 
@@ -697,8 +810,8 @@ body.sidebar-collapsed .cards-container {
   font-size: 11px;
   font-weight: 500;
   margin-bottom: 6px;
-  background: #d7efec;
-  color: #125e55;
+  background: #e3f0fd;
+  color: #1469CF;
 }
 
 .card .meta .material-icons {
@@ -819,8 +932,8 @@ body.sidebar-collapsed .cards-container {
 }
 
 .badge-eat {
-  background: #fef3c7;
-  color: #92400e;
+  background: #e3f0fd;
+  color: #1469CF;
 }
 
 .badge-play {
@@ -1071,6 +1184,8 @@ body.sidebar-collapsed .cards-container {
   align-items: center;
   justify-content: center;
   white-space: nowrap;
+  background: #e3f0fd;
+  color: #1469CF;
 }
 .leaflet-interactive:focus {
   outline: none;
@@ -1079,13 +1194,13 @@ body.sidebar-collapsed .cards-container {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  white-space: nowrap;     /* không cho xuống dòng trong pill */
-}
-
-/* Đảm bảo các số không bị set display:block */
-#stat-all,
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  background: #e3f0fd;
+  color: #1469CF;
 #stat-tour,
 #stat-svc,
 #stat-evt {
@@ -1215,7 +1330,10 @@ body.sidebar-collapsed .cards-container {
   align-items: center;
   gap: 4px;
   font-size: 13px;
-  color: #64748b;
+  color: #1469CF;
+  background: #eaf6ff;
+  padding: 4px 8px;
+  border-radius: 6px;
 }
 
 .card .meta .material-icons {
@@ -1443,7 +1561,7 @@ body.sidebar-collapsed .cards-container {
 
 /* Khi SIDEBAR ĐANG MỞ: nút nằm ở góc phải trên của sidebar */
 body:not(.sidebar-collapsed) .fab-right {
-  left: calc(var(--sidebar-w) - 64px);  /* sidebar_w - (48px nút + 16px margin) */
+  left: calc(var(--sidebar-w) - 28px);
   right: auto;
 }
 
@@ -1497,7 +1615,7 @@ body.sidebar-collapsed .fab-right {
 
 /* SIDEBAR ĐANG MỞ: nút nằm ở góc phải trên của sidebar */
 body:not(.sidebar-collapsed) .fab-right {
-  left: calc(var(--sidebar-w) - 64px);  /* sidebar_w - (48px nút + 16px margin) */
+  left: calc(var(--sidebar-w) - 28px);
   right: auto;
 }
 
