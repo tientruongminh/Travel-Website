@@ -164,8 +164,8 @@
   <script>
     // Handle profile/login button click
     function handleProfileClick() {
-      // Check if user is logged in
-      const isLoggedIn = localStorage.getItem('user_token') !== null;
+      // Check if user is logged in (using auth_token from auth.js)
+      const isLoggedIn = localStorage.getItem('auth_token') !== null;
 
       if (isLoggedIn) {
         location.href = 'profile.html';
@@ -181,7 +181,7 @@
       const btnText = document.getElementById('profile-btn-text');
       if (!btnText) return;
 
-      const isLoggedIn = localStorage.getItem('user_token') !== null;
+      const isLoggedIn = localStorage.getItem('auth_token') !== null;
       btnText.textContent = isLoggedIn ? 'Cá nhân' : 'Đăng nhập';
     }
 
