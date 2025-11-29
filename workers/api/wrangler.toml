@@ -1,0 +1,29 @@
+name = "travel-api"
+main = "src/index.ts"
+compatibility_date = "2024-11-24"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "travel-db"
+database_id = "3e15373c-a998-4851-bb88-292a33b12d9a"
+
+# R2 Storage binding for images (temporarily disabled - enable R2 first)
+# [[r2_buckets]]
+# binding = "IMAGES"
+# bucket_name = "travel-images"
+
+# KV for sessions/cache
+[[kv_namespaces]]
+binding = "KV"
+id = "e3af7dc06bf14c7fb1468f19f176f623"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+FRONTEND_URL = "https://travel-website-8xj.pages.dev"
+
+# Secrets (set via wrangler secret put)
+# JWT_SECRET
+# STREAM_API_KEY
+# STREAM_ACCOUNT_ID

@@ -1,162 +1,201 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Quảng Ninh - Những sắc màu văn hóa</title>
-        <meta name="description" content="Khám phá các địa điểm du lịch, sản phẩm, và sự kiện tại Quảng Ninh với bản đồ tương tác." />
-          <meta name="keywords" content="Quảng Ninh, du lịch, văn hóa, bản đồ" />
-            <meta name="robots" content="index, follow" />
-              
-                <!-- Leaflet -->
-                  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-                    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-                    
-                      <!-- MarkerCluster -->
-                        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-                          <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-                            <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-                            
-                              <!-- Turf.js -->
-                                <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-                                
-                                  <!-- Material Icons -->
-                                    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-                                    
-                                      <!-- App Styles -->
-                                        <link rel="stylesheet" href="styles.css" />
-                                        </head>
-                                        <body>
-                                          <!-- FAB Toggle Button -->
-                                            <button id="sidebarToggle" class="fab fab-right" aria-label="Mở/đóng menu" style="background:#1469CF;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;border:none;">
-                                              <span style="display:inline-block;width:24px;height:24px;">
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                  <rect y="5" width="24" height="2.5" rx="1.25" fill="white"/>
-                                                  <rect y="11" width="24" height="2.5" rx="1.25" fill="white"/>
-                                                  <rect y="17" width="24" height="2.5" rx="1.25" fill="white"/>
-                                                </svg>
-                                              </span>
-                                            </button>
-                                                  
-                                                    <!-- Sidebar -->
-                                                      <aside id="sidebar">
-                                                          <!-- Header -->
-                                                              <div class="sb-head">
-                                                                    <div class="sb-logo">
-                                                                              <img src="./images/logo.png?v=2" alt="Quảng Ninh Logo" />
-                                                                                    </div>
-                                                                                          
-                                                                                              </div>
-                                                                                              
-                                                                                                  <!-- Search Box -->
-                                                                                                      <div class="sb-search">
-                                                                                                            <span class="material-icons">search</span>
-                                                                                                                  <input id="keyword" type="search" placeholder="Tìm theo tên địa điểm..." autocomplete="off" />
-                                                                                                                      </div>
-                                                                                                                      
-                                                                                                                          <!-- Filter Pills -->
-                                                                                                                              <div class="sb-pills">
-                                                                                                                                    <button class="pill active" data-cat="all"><i>📍</i> Tất cả</button>
-                                                                                                                                          <button class="pill" data-cat="tour"><i>🏞️</i> Du lịch</button>
-                                                                                                                                                <button class="pill" data-cat="service"><i>🛍️</i> Sản phẩm</button>
-                                                                                                                                                      <button class="pill" data-cat="event"><i>🎉</i> Sự kiện</button>
-                                                                                                                                                          <button class="pill" data-cat="food"><i>🍽️</i> Ẩm thực</button>
-                                                                                                                                                            <button class="pill" data-cat="stay"><i>🏨</i> Lưu trú</button>
-                                                                                                                                                          </div>
-                                                                                                                                                          
-                                                                                                                                                              <!-- Stats Summary -->
-                                                                                                                                                                  <!-- Stats Summary - CẬP NHẬT STRUCTURE -->
-                                                                                                                                                                  
-                                                                                                                                                                  
-                                                                                                                                                                      <!-- Spot List -->
-                                                                                                                                                                      <div class="sb-list" id="spot-list">
-                                                                                                                                                                        <div class="sb-loading">Đang tải danh sách...</div>
-                                                                                                                                                                      </div>
-                                                                                                                                                                          
-                                                                                                                                                                              <!-- Bottom Buttons -->
-                                                                                                                                                                                  <!-- Bottom Buttons (moved out of sidebar to keep fixed to viewport) -->
-                                                                                                                                                                                  
-                                                                                                                                                                                    </aside>
-                                                                                                                                                                                    
-                                                                                                                                                                                      <!-- Bottom Buttons (viewport-fixed) -->
-                                                                                                                                                                                        <div class="sb-bottom">
-                                                                                                                                                                                            <button id="open-explore" class="btn-primary" onclick="location.href='explore.html'">
-                                                                                                                                                                                                  <span class="material-icons">travel_explore</span>
-                                                                                                                                                                                                        Khám phá
-                                                                                                                                                                                                            </button>
-                                                                                                                                                                                                            
-                                                                                                                                                                                                                <button id="open-profile" class="btn-ghost" onclick="location.href='profile.html'">
-                                                                                                                                                                                                                      <span class="material-icons" style="color:#1469CF">account_circle</span>
-                                                                                                                                                                                                                      <span style="color:#1469CF">Cá nhân</span>
-                                                                                                                                                                                                                            </button>
-                                                                                                                                                                                                                                  </div>
-                                                                                                                                                                                                                                  
-                                                                                                                                                                                                                                    <!-- Map -->
-                                                                                                                                                                                                                                      <div id="mapid"></div>
-                                                                                                                                                                                                                                      
-                                                                                                                                                                                                                                        <!-- Bottom Cards Rail -->
-                                                                                                                                                                                                                                          <div class="cards-container" id="cards">
-                                                                                                                                                                                                                                              <button class="sheet-handle" aria-label="Thu gọn/mở rộng">
-                                                                                                                                                                                                                                                    <div class="grabber"></div>
-                                                                                                                                                                                                                                                        </button>
-                                                                                                                                                                                                                                                          </div>
-                                                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                                            <!-- Upload Modal -->
-                                                                                                                                                                                                                                                              <dialog id="uploadModal" class="modal">
-                                                                                                                                                                                                                                                                  <form id="uploadForm" method="dialog">
-                                                                                                                                                                                                                                                                        <h3>Thêm địa điểm mới</h3>
-                                                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                                                                    <label>
-                                                                                                                                                                                                                                                                                            Tên địa điểm
-                                                                                                                                                                                                                                                                                                    <input id="u-name" type="text" placeholder="Ví dụ: Vịnh Hạ Long" required />
-                                                                                                                                                                                                                                                                                                          </label>
-                                                                                                                                                                                                                                                                                                                
-                                                                                                                                                                                                                                                                                                                      <label>
-                                                                                                                                                                                                                                                                                                                              Danh mục
-                                                                                                                                                                                                                                                                                                                                      <select id="u-cat" required>
-                                                                                                                                                                                                                                                                                                                                                <option value="tour">🏞️ Du lịch</option>
-                                                                                                                                                                                                                                                                                                                                                          <option value="service">🛍️ Sản phẩm</option>
-                                                                                                                                                                                                                                                                                                                                                                    <option value="event">🎉 Sự kiện</option>
-                                                                                                                                                                                                                                                                                                                                                                            </select>
-                                                                                                                                                                                                                                                                                                                                                                                  </label>
-                                                                                                                                                                                                                                                                                                                                                                                        
-                                                                                                                                                                                                                                                                                                                                                                                              <label>
-                                                                                                                                                                                                                                                                                                                                                                                                      Mô tả
-                                                                                                                                                                                                                                                                                                                                                                                                              <textarea id="u-desc" placeholder="Mô tả ngắn về địa điểm..." rows="3"></textarea>
-                                                                                                                                                                                                                                                                                                                                                                                                                    </label>
-                                                                                                                                                                                                                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                                                                                                                                                                                                                <label>
-                                                                                                                                                                                                                                                                                                                                                                                                                                        Ảnh thumbnail (URL)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                <input id="u-thumb" type="url" placeholder="https://example.com/image.jpg" />
-                                                                                                                                                                                                                                                                                                                                                                                                                                                      </label>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                  <label>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                          Media/Video (URL)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  <input id="u-media" type="url" placeholder="https://example.com/media.jpg" />
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </label>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="latlng">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <label>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      Latitude
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <input id="u-lat" type="number" step="any" placeholder="20.9517" required />
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </label>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <label>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          Longitude
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <input id="u-lng" type="number" step="any" placeholder="107.0449" required />
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </label>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              <menu>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      <button type="button" value="cancel">Hủy</button>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              <button type="submit" value="default" class="btn-primary">Lưu</button>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </menu>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </form>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          </dialog>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <!-- Toast Notification -->
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              <div id="toast" class="toast" role="status" aria-live="polite"></div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <!-- App Script -->
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  <script src="map.js" defer></script>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  </body>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  </html>>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quảng Ninh - Những sắc màu văn hóa</title>
+  <meta name="description"
+    content="Khám phá các địa điểm du lịch, sản phẩm, và sự kiện tại Quảng Ninh với bản đồ tương tác." />
+  <meta name="keywords" content="Quảng Ninh, du lịch, văn hóa, bản đồ" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- MarkerCluster -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <!-- Turf.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <!-- FAB Toggle Button -->
+  <button id="sidebarToggle" class="fab fab-right" aria-label="Mở/đóng menu"
+    style="background:#1469CF;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;border:none;">
+    <span style="display:inline-block;width:24px;height:24px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect y="5" width="24" height="2.5" rx="1.25" fill="white" />
+        <rect y="11" width="24" height="2.5" rx="1.25" fill="white" />
+        <rect y="17" width="24" height="2.5" rx="1.25" fill="white" />
+      </svg>
+    </span>
+  </button>
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <!-- Header -->
+    <div class="sb-head">
+      <div class="sb-logo">
+        <img src="./images/logo.png?v=2" alt="Quảng Ninh Logo" />
+      </div>
+
+    </div>
+
+    <!-- Search Box -->
+    <div class="sb-search">
+      <span class="material-icons">search</span>
+      <input id="keyword" type="search" placeholder="Tìm theo tên địa điểm..." autocomplete="off" />
+    </div>
+
+    <!-- Filter Pills -->
+    <div class="sb-pills">
+      <button class="pill active" data-cat="all"><i>📍</i> Tất cả</button>
+      <button class="pill" data-cat="tour"><i>🏞️</i> Du lịch</button>
+      <button class="pill" data-cat="service"><i>🛍️</i> Sản phẩm</button>
+      <button class="pill" data-cat="event"><i>🎉</i> Sự kiện</button>
+      <button class="pill" data-cat="food"><i>🍽️</i> Ẩm thực</button>
+      <button class="pill" data-cat="stay"><i>🏨</i> Lưu trú</button>
+    </div>
+
+    <!-- Stats Summary -->
+    <!-- Stats Summary - CẬP NHẬT STRUCTURE -->
+
+
+    <!-- Spot List -->
+    <div class="sb-list" id="spot-list">
+      <div class="sb-loading">Đang tải danh sách...</div>
+    </div>
+
+    <!-- Bottom Buttons -->
+    <!-- Bottom Buttons (moved out of sidebar to keep fixed to viewport) -->
+
+  </aside>
+
+  <!-- Bottom Buttons (viewport-fixed) -->
+  <div class="sb-bottom">
+    <button id="open-explore" class="btn-primary" onclick="location.href='explore.html'">
+      <span class="material-icons">travel_explore</span>
+      Khám phá
+    </button>
+
+    <button id="open-profile" class="btn-ghost" onclick="handleProfileClick()">
+      <span class="material-icons" style="color:#1469CF">account_circle</span>
+      <span id="profile-btn-text" style="color:#1469CF">Đăng nhập</span>
+    </button>
+  </div>
+
+  <!-- Map -->
+  <div id="mapid"></div>
+
+  <!-- Bottom Cards Rail -->
+  <div class="cards-container" id="cards">
+    <button class="sheet-handle" aria-label="Thu gọn/mở rộng">
+      <div class="grabber"></div>
+    </button>
+  </div>
+
+  <!-- Upload Modal -->
+  <dialog id="uploadModal" class="modal">
+    <form id="uploadForm" method="dialog">
+      <h3>Thêm địa điểm mới</h3>
+
+      <label>
+        Tên địa điểm
+        <input id="u-name" type="text" placeholder="Ví dụ: Vịnh Hạ Long" required />
+      </label>
+
+      <label>
+        Danh mục
+        <select id="u-cat" required>
+          <option value="tour">🏞️ Du lịch</option>
+          <option value="service">🛍️ Sản phẩm</option>
+          <option value="event">🎉 Sự kiện</option>
+        </select>
+      </label>
+
+      <label>
+        Mô tả
+        <textarea id="u-desc" placeholder="Mô tả ngắn về địa điểm..." rows="3"></textarea>
+      </label>
+
+      <label>
+        Ảnh thumbnail (URL)
+        <input id="u-thumb" type="url" placeholder="https://example.com/image.jpg" />
+      </label>
+
+      <label>
+        Media/Video (URL)
+        <input id="u-media" type="url" placeholder="https://example.com/media.jpg" />
+      </label>
+
+      <div class="latlng">
+        <label>
+          Latitude
+          <input id="u-lat" type="number" step="any" placeholder="20.9517" required />
+        </label>
+        <label>
+          Longitude
+          <input id="u-lng" type="number" step="any" placeholder="107.0449" required />
+        </label>
+      </div>
+
+      <menu>
+        <button type="button" value="cancel">Hủy</button>
+        <button type="submit" value="default" class="btn-primary">Lưu</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- App Script -->
+  <script>
+    // Handle profile/login button click
+    function handleProfileClick() {
+      // Check if user is logged in
+      const isLoggedIn = localStorage.getItem('user_token') !== null;
+
+      if (isLoggedIn) {
+        location.href = 'profile.html';
+      } else {
+        // Redirect to Google OAuth login
+        const apiUrl = 'https://travel-api.truongminhtien07122005.workers.dev';
+        window.location.href = `${apiUrl}/api/auth/login`;
+      }
+    }
+
+    // Update button text based on login status
+    function updateProfileButton() {
+      const btnText = document.getElementById('profile-btn-text');
+      if (!btnText) return;
+
+      const isLoggedIn = localStorage.getItem('user_token') !== null;
+      btnText.textContent = isLoggedIn ? 'Cá nhân' : 'Đăng nhập';
+    }
+
+    // Update on page load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateProfileButton);
+    } else {
+      updateProfileButton();
+    }
+
+    // Check periodically for login status changes
+    setInterval(updateProfileButton, 2000);
+  </script>
+  <script src="map.js" defer></script>
+</body>
+
+</html>>

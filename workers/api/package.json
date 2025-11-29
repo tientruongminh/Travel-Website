@@ -1,0 +1,23 @@
+{
+  "name": "travel-api",
+  "version": "1.0.0",
+  "description": "Cloudflare Workers API for Travel Website",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "types": "wrangler types"
+  },
+  "keywords": ["cloudflare", "workers", "api", "travel"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "wrangler": "^3.94.0"
+  },
+  "dependencies": {
+    "hono": "^4.6.14",
+    "zod": "^3.23.8"
+  }
+}
